@@ -3,6 +3,10 @@ const Activity = require("../models/Activity");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const { generateNextTaskOccurrence } = require("../utils/cronJobs");
+const {
+  sendTaskAssignmentEmail,
+  sendTaskCompletionEmail,
+} = require("../utils/emailService");
 
 // @desc    Get tasks
 // @route   GET /api/tasks
@@ -218,6 +222,20 @@ exports.createTask = async (req, res) => {
         entityType: "Task",
         actionUrl: `/dashboard/tasks/${task._id}`,
       });
+
+      // Send email notification
+      if (assignee.email) {
+        try {
+          await sendTaskAssignmentEmail(assignee.email, assignee.name, {
+            title,
+            description,
+            priority,
+            deadline,
+          });
+        } catch (emailError) {
+          console.error("Failed to send email:", emailError);
+        }
+      }
     }
 
     await Activity.create({
@@ -274,6 +292,7 @@ exports.updateTask = async (req, res) => {
       remarks,
       actualHours,
       assignedTo,
+      completionProof,
     } = req.body;
 
     // Normalize status to match enum values (capitalize first letter)
@@ -290,6 +309,17 @@ exports.updateTask = async (req, res) => {
       req.body.status = statusMap[status.toLowerCase()] || status;
     }
 
+    // Validate completion requirements
+    if (req.body.status === "Completed") {
+      if (!req.body.completionProof || req.body.completionProof.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Completion proof is required when marking a task as completed",
+        });
+      }
+    }
+
     // Add to history if status changed
     if (status && status !== task.status) {
       req.body.history = [
@@ -298,7 +328,10 @@ exports.updateTask = async (req, res) => {
           status: req.body.status,
           changedBy: req.user._id,
           changedAt: new Date(),
-          note: req.body.statusNote || `Status changed to ${req.body.status}`,
+          note:
+            req.body.statusNote ||
+            req.body.completionProof ||
+            `Status changed to ${req.body.status}`,
         },
       ];
 
@@ -328,6 +361,24 @@ exports.updateTask = async (req, res) => {
           entityId: task._id,
           entityType: "Task",
         });
+
+        // Send email notification to assigner
+        try {
+          const assigner = await User.findById(task.assignedBy);
+          if (assigner && assigner.email) {
+            await sendTaskCompletionEmail(
+              assigner.email,
+              {
+                title: task.title,
+                description: task.description,
+                priority: task.priority,
+              },
+              req.user.name,
+            );
+          }
+        } catch (emailError) {
+          console.error("Failed to send completion email:", emailError);
+        }
 
         // If this is a child task of a recurring task, generate the next instance
         if (task.parentTaskId) {

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
+import TaskBoard from "@/components/TaskBoard";
 import {
   Card,
   CardContent,
@@ -14,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Toast from "@/components/Toast";
 import {
   Plus,
   Trash2,
@@ -27,6 +29,7 @@ import {
   MoreVertical,
   Eye,
   Activity,
+  X,
 } from "lucide-react";
 import { taskAPI, usersAPI, teamAPI } from "@/lib/api";
 
@@ -51,8 +54,6 @@ export default function TasksPage() {
     },
     recurrenceEndDate: "",
   });
-  const [selectedTasks, setSelectedTasks] = useState([]);
-  const [showBulkActions, setShowBulkActions] = useState(false);
   const [showComments, setShowComments] = useState(null);
   const [showReassign, setShowReassign] = useState(null);
   const [showEscalate, setShowEscalate] = useState(null);
@@ -61,11 +62,14 @@ export default function TasksPage() {
   const [reassignTo, setReassignTo] = useState("");
   const [escalateTo, setEscalateTo] = useState("");
   const [escalationReason, setEscalationReason] = useState("");
+  const [showCompleteInput, setShowCompleteInput] = useState(null);
+  const [completionProof, setCompletionProof] = useState("");
+  const [expandedTask, setExpandedTask] = useState(null);
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [taskViewTab, setTaskViewTab] = useState("all"); // "all", "completed", "inprogress", "pending", "overdue"
-  const [dateFilter, setDateFilter] = useState("all"); // "all", "thisWeek", "thisMonth", "custom"
+  const [dateFilter, setDateFilter] = useState("all"); // "all", "today", "thisWeek", "thisMonth", "custom"
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [userFilter, setUserFilter] = useState(""); // user ID filter
@@ -93,7 +97,23 @@ export default function TasksPage() {
       }
 
       // Add date filter
-      if (dateFilter === "thisWeek") {
+      if (dateFilter === "today") {
+        const now = new Date();
+        const startOfDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        endOfDay.setHours(23, 59, 59, 999);
+        filters.startDate = startOfDay.toISOString();
+        filters.endDate = endOfDay.toISOString();
+      } else if (dateFilter === "thisWeek") {
         const now = new Date();
         const startOfWeek = new Date(now);
         startOfWeek.setDate(now.getDate() - now.getDay());
@@ -176,31 +196,6 @@ export default function TasksPage() {
     }
   };
 
-  const handleSelectTask = (taskId) => {
-    setSelectedTasks((prev) =>
-      prev.includes(taskId)
-        ? prev.filter((id) => id !== taskId)
-        : [...prev, taskId],
-    );
-    setShowBulkActions(
-      selectedTasks.length > 0 || !selectedTasks.includes(taskId),
-    );
-  };
-
-  const handleBulkDelete = async () => {
-    if (window.confirm(`Delete ${selectedTasks.length} selected tasks?`)) {
-      try {
-        await Promise.all(selectedTasks.map((id) => taskAPI.deleteTask(id)));
-        setSuccess(`${selectedTasks.length} tasks deleted successfully`);
-        setSelectedTasks([]);
-        setShowBulkActions(false);
-        fetchTasks();
-      } catch (err) {
-        setError("Failed to delete tasks");
-      }
-    }
-  };
-
   const handleAddComment = async (taskId) => {
     if (!commentText.trim()) return;
     try {
@@ -253,11 +248,26 @@ export default function TasksPage() {
   };
 
   const handleComplete = async (taskId) => {
+    setShowCompleteInput(taskId);
+  };
+
+  const handleCompleteSubmit = async (taskId) => {
+    if (!completionProof.trim()) {
+      setError("Please provide completion proof");
+      return;
+    }
+
     try {
-      await taskAPI.updateTask(taskId, { status: "completed" });
+      await taskAPI.updateTask(taskId, {
+        status: "completed",
+        completionProof,
+      });
+      setShowCompleteInput(null);
+      setCompletionProof("");
+      setSuccess("Task marked as completed successfully");
       fetchTasks();
     } catch (err) {
-      setError("Failed to update task");
+      setError(err.response?.data?.message || "Failed to update task");
     }
   };
 
@@ -290,11 +300,11 @@ export default function TasksPage() {
 
   const getRowBackgroundColor = (status, priority) => {
     // If completed, show green
-    if (status === "Completed" || status === "completed") {
+    if (status?.toLowerCase() === "completed") {
       return "bg-green-100";
     }
     // If in progress, show blue
-    if (status === "In Progress" || status === "in progress") {
+    if (status?.toLowerCase() === "in progress") {
       return "bg-blue-100";
     }
     // If pending, color by priority
@@ -316,860 +326,840 @@ export default function TasksPage() {
 
   const tasksToDisplay = filteredTasks;
 
+  const handleTaskUpdate = async (taskId, updates) => {
+    try {
+      await taskAPI.updateTask(taskId, updates);
+      setSuccess("Task updated successfully!");
+      fetchTasks();
+    } catch (err) {
+      setError("Failed to update task");
+    }
+  };
+
+  const handleTaskDelete = async (taskId) => {
+    if (window.confirm("Are you sure you want to delete this task?")) {
+      try {
+        await taskAPI.deleteTask(taskId);
+        setSuccess("Task deleted successfully!");
+        fetchTasks();
+      } catch (err) {
+        setError("Failed to delete task");
+      }
+    }
+  };
+
+  const handleTaskCreate = () => {
+    setActiveTab("create");
+  };
+
   return (
-    <div className="space-y-6">
-      {/* Header with Tab Navigation */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Tasks</h1>
-          <p className="text-muted-foreground mt-1">
-            {canAssignTasks ? "Manage all tasks" : "Your assigned tasks"}
-          </p>
-        </div>
-        {canAssignTasks && (
-          <Button onClick={() => setActiveTab("create")} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Create Task
-          </Button>
-        )}
-      </div>
-
-      {/* Status Filters - shown for all users */}
-      <div className="flex flex-wrap gap-3 border-b border-slate-200 pb-2">
-        <button
-          onClick={() => setTaskViewTab("all")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            taskViewTab === "all"
-              ? "border-b-2 border-[#0F6E56] text-[#0F6E56]"
-              : "text-muted-foreground hover:text-slate-900"
-          }`}
-        >
-          All Tasks
-        </button>
-        <button
-          onClick={() => setTaskViewTab("completed")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            taskViewTab === "completed"
-              ? "border-b-2 border-[#0F6E56] text-[#0F6E56]"
-              : "text-muted-foreground hover:text-slate-900"
-          }`}
-        >
-          <CheckCircle2 className="inline h-4 w-1 mr-1" />
-          Completed
-        </button>
-        <button
-          onClick={() => setTaskViewTab("inprogress")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            taskViewTab === "inprogress"
-              ? "border-b-2 border-[#0F6E56] text-[#0F6E56]"
-              : "text-muted-foreground hover:text-slate-900"
-          }`}
-        >
-          <Activity className="inline h-4 w-1 mr-1" />
-          In Progress
-        </button>
-        <button
-          onClick={() => setTaskViewTab("pending")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            taskViewTab === "pending"
-              ? "border-b-2 border-[#0F6E56] text-[#0F6E56]"
-              : "text-muted-foreground hover:text-slate-900"
-          }`}
-        >
-          <Clock className="inline h-4 w-1 mr-1" />
-          Pending
-        </button>
-        <button
-          onClick={() => setTaskViewTab("overdue")}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            taskViewTab === "overdue"
-              ? "border-b-2 border-[#0F6E56] text-[#0F6E56]"
-              : "text-muted-foreground hover:text-slate-900"
-          }`}
-        >
-          <AlertCircle className="inline h-4 w-1 mr-1" />
-          Overdue
-        </button>
-      </div>
-
-      {/* Advanced Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-wrap gap-4 items-end">
-            {/* Date Filter */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Date Range</Label>
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                className="px-3 py-2 border border-slate-300 rounded-md text-sm"
-              >
-                <option value="all">All Time</option>
-                <option value="thisWeek">This Week</option>
-                <option value="thisMonth">This Month</option>
-                <option value="custom">Custom Range</option>
-              </select>
-            </div>
-
-            {/* Custom Date Range */}
-            {dateFilter === "custom" && (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Start Date</Label>
-                  <Input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    className="w-40"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">End Date</Label>
-                  <Input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="w-40"
-                  />
-                </div>
-              </>
-            )}
-
-            {/* User Filter - only for admins/managers */}
-            {canAssignTasks && (
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Assigned To</Label>
-                <select
-                  value={userFilter}
-                  onChange={(e) => setUserFilter(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 rounded-md text-sm"
-                >
-                  <option value="">All Users</option>
-                  {users.map((u) => (
-                    <option key={u._id} value={u._id}>
-                      {u.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Clear Filters Button */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setTaskViewTab("all");
-                setDateFilter("all");
-                setStartDate("");
-                setEndDate("");
-                setUserFilter("");
-              }}
-            >
-              Clear Filters
-            </Button>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      {/* Header with Create Task */}
+      <div className="sticky top-0 z-30 bg-gradient-to-r  shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-extrabold text-blue-900 tracking-tight">
+              Tasks
+            </h1>
+            <p className="text-blue-800 text-base mt-1 font-medium">
+              {canAssignTasks ? "Manage all tasks" : "Your assigned tasks"}
+            </p>
           </div>
-        </CardContent>
-      </Card>
+          {canAssignTasks && (
+            <Button
+              onClick={handleTaskCreate}
+              className="bg-indigo-700 text-gray-100 hover:bg-indigo-900 rounded-xl font-bold text-base px-6 py-3 shadow-lg"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Create Task
+            </Button>
+          )}
+        </div>
+      </div>
 
+      {/* Alerts */}
       {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-600">{error}</AlertDescription>
-        </Alert>
+        <Toast type="error" message={error} onClose={() => setError("")} />
       )}
 
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-600">
-            {success}
-          </AlertDescription>
-        </Alert>
+        <Toast
+          type="success"
+          message={success}
+          onClose={() => setSuccess("")}
+        />
       )}
 
-      {/* Create Task Section */}
+      {/* Create Task Modal */}
       {canAssignTasks && activeTab === "create" && (
-        <Card className="border-slate-200 shadow-sm bg-slate-50">
-          <CardHeader>
-            <CardTitle>Create New Task</CardTitle>
-            <CardDescription>
-              Only Admin and Manager can create and assign tasks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="title">Task Title *</Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                  placeholder="Enter task title"
-                  required
-                  className="mt-1"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="description">Description</Label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
-                  placeholder="Enter task description"
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="4"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="assignedTo">Assign To *</Label>
-                <div className="mt-1 space-y-2 max-h-32 overflow-y-auto border border-slate-300 rounded-md p-2">
-                  {users.map((u) => (
-                    <label
-                      key={u._id}
-                      className="flex items-center space-x-2 cursor-pointer"
-                    >
-                      <input
-                        type="checkbox"
-                        checked={formData.assignedTo.includes(u._id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData({
-                              ...formData,
-                              assignedTo: [...formData.assignedTo, u._id],
-                            });
-                          } else {
-                            setFormData({
-                              ...formData,
-                              assignedTo: formData.assignedTo.filter(
-                                (id) => id !== u._id,
-                              ),
-                            });
-                          }
-                        }}
-                        className="rounded border-slate-300"
-                      />
-                      <span className="text-sm">
-                        {u.name} ({u.role})
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="priority">Priority</Label>
-                  <select
-                    id="priority"
-                    value={formData.priority}
-                    onChange={(e) =>
-                      setFormData({ ...formData, priority: e.target.value })
-                    }
-                    className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <Card className="w-full max-w-2xl rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white">
+                      Create New Task
+                    </CardTitle>
+                    <CardDescription className="text-white">
+                      Assign tasks to team members
+                    </CardDescription>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab("view")}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
                   >
-                    <option value="Low">Low</option>
-                    <option value="Medium">Medium</option>
-                    <option value="High">High</option>
-                    <option value="Critical">Critical</option>
-                  </select>
+                    <X className="h-6 w-6" />
+                  </button>
                 </div>
+              </CardHeader>
 
-                <div>
-                  <Label htmlFor="deadline">Deadline</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={formData.deadline}
-                    onChange={(e) =>
-                      setFormData({ ...formData, deadline: e.target.value })
-                    }
-                    className="mt-1"
-                  />
-                </div>
-              </div>
+              <CardContent className="pt-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="title" className="font-semibold">
+                      Task Title *
+                    </Label>
+                    <Input
+                      id="title"
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData({ ...formData, title: e.target.value })
+                      }
+                      placeholder="Enter task title"
+                      required
+                      className="mt-2 h-11 rounded-xl"
+                    />
+                  </div>
 
-              {/* Task Type Selection */}
-              <div>
-                <Label htmlFor="taskType">Task Type</Label>
-                <select
-                  id="taskType"
-                  value={formData.taskType}
-                  onChange={(e) => {
-                    const isRecurring = e.target.value !== "One-time";
-                    setFormData({
-                      ...formData,
-                      taskType: e.target.value,
-                      isRecurring,
-                    });
-                  }}
-                  className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="One-time">One-time</option>
-                  <option value="Daily">Daily</option>
-                  <option value="Weekly">Weekly</option>
-                  <option value="Monthly">Monthly</option>
-                  <option value="Custom">Custom</option>
-                </select>
-              </div>
+                  <div>
+                    <Label htmlFor="description" className="font-semibold">
+                      Description
+                    </Label>
+                    <textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Enter task description"
+                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      rows="3"
+                    />
+                  </div>
 
-              {/* Recurrence Fields */}
-              {formData.isRecurring && (
-                <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 space-y-4">
-                  <h3 className="font-semibold text-sm text-blue-900">
-                    Recurrence Settings
-                  </h3>
+                  <div>
+                    <Label htmlFor="assignedTo" className="font-semibold">
+                      Assign To *
+                    </Label>
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-slate-300 rounded-xl p-3">
+                      {users.map((u) => (
+                        <label
+                          key={u._id}
+                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={formData.assignedTo.includes(u._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({
+                                  ...formData,
+                                  assignedTo: [...formData.assignedTo, u._id],
+                                });
+                              } else {
+                                setFormData({
+                                  ...formData,
+                                  assignedTo: formData.assignedTo.filter(
+                                    (id) => id !== u._id,
+                                  ),
+                                });
+                              }
+                            }}
+                            className="rounded border-slate-300 w-4 h-4"
+                          />
+                          <span className="text-sm font-medium">{u.name}</span>
+                          <span className="text-xs text-slate-500 ml-auto">
+                            {u.role}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="frequency">Frequency</Label>
+                      <Label htmlFor="priority" className="font-semibold">
+                        Priority
+                      </Label>
                       <select
-                        id="frequency"
-                        value={formData.recurrencePattern.frequency}
+                        id="priority"
+                        value={formData.priority}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            recurrencePattern: {
-                              ...formData.recurrencePattern,
-                              frequency: e.target.value,
-                            },
+                            priority: e.target.value,
                           })
                         }
-                        className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="biweekly">Bi-weekly</option>
-                        <option value="monthly">Monthly</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Critical">Critical</option>
                       </select>
                     </div>
 
                     <div>
-                      <Label htmlFor="interval">Repeat Every</Label>
+                      <Label htmlFor="deadline" className="font-semibold">
+                        Deadline
+                      </Label>
                       <Input
-                        id="interval"
-                        type="number"
-                        min="1"
-                        value={formData.recurrencePattern.interval}
+                        id="deadline"
+                        type="date"
+                        value={formData.deadline}
                         onChange={(e) =>
                           setFormData({
                             ...formData,
-                            recurrencePattern: {
-                              ...formData.recurrencePattern,
-                              interval: parseInt(e.target.value) || 1,
-                            },
+                            deadline: e.target.value,
                           })
                         }
-                        className="mt-1"
+                        className="mt-2 h-11 rounded-xl"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="recurrenceEndDate">
-                      End Date (Optional)
+                  {/* Recurring Task Section */}
+                  <div className="border-t border-slate-200 pt-4">
+                    <Label className="font-semibold mb-3 block">
+                      Recurring Task
                     </Label>
-                    <Input
-                      id="recurrenceEndDate"
-                      type="date"
-                      value={formData.recurrenceEndDate}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          recurrenceEndDate: e.target.value,
-                        })
-                      }
-                      className="mt-1"
-                    />
-                    <p className="text-xs text-slate-600 mt-1">
-                      Leave empty for indefinite recurrence
-                    </p>
-                  </div>
-                </div>
-              )}
+                    <div className="space-y-3">
+                      <div className="flex gap-4">
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="taskType"
+                            value="One-time"
+                            checked={formData.taskType === "One-time"}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                taskType: e.target.value,
+                                isRecurring: false,
+                              })
+                            }
+                            className="w-4 h-4 text-indigo-600"
+                          />
+                          <span className="text-sm">One-time</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="taskType"
+                            value="One Day"
+                            checked={formData.taskType === "One Day"}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                taskType: e.target.value,
+                                isRecurring: true,
+                                recurrencePattern: {
+                                  frequency: "daily",
+                                  interval: 1,
+                                  daysOfWeek: [],
+                                  dayOfMonth: 1,
+                                },
+                              })
+                            }
+                            className="w-4 h-4 text-indigo-600"
+                          />
+                          <span className="text-sm">One Day</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="taskType"
+                            value="Customize"
+                            checked={formData.taskType === "Customize"}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                taskType: e.target.value,
+                                isRecurring: true,
+                              })
+                            }
+                            className="w-4 h-4 text-indigo-600"
+                          />
+                          <span className="text-sm">Customize</span>
+                        </label>
+                      </div>
 
-              <Button type="submit" className="w-full">
-                Create Task
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      )}
+                      {formData.taskType === "Customize" && (
+                        <div className="bg-slate-50 p-4 rounded-xl space-y-3">
+                          <div>
+                            <Label className="text-sm font-medium">
+                              Frequency
+                            </Label>
+                            <select
+                              value={formData.recurrencePattern.frequency}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  recurrencePattern: {
+                                    ...formData.recurrencePattern,
+                                    frequency: e.target.value,
+                                  },
+                                })
+                              }
+                              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            >
+                              <option value="daily">Daily</option>
+                              <option value="weekly">Weekly</option>
+                              <option value="monthly">Monthly</option>
+                            </select>
+                          </div>
 
-      {/* View Tasks Section */}
-      {!canAssignTasks || activeTab === "view" ? (
-        <>
-          {/* Bulk Actions Bar */}
-          {showBulkActions && selectedTasks.length > 0 && (
-            <Card className="bg-blue-50 border-blue-200">
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-blue-900">
-                      {selectedTasks.length} task
-                      {selectedTasks.length > 1 ? "s" : ""} selected
-                    </span>
+                          <div>
+                            <Label className="text-sm font-medium">
+                              Interval (every X days/weeks/months)
+                            </Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={formData.recurrencePattern.interval}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  recurrencePattern: {
+                                    ...formData.recurrencePattern,
+                                    interval: parseInt(e.target.value) || 1,
+                                  },
+                                })
+                              }
+                              className="mt-1 h-10 rounded-lg"
+                            />
+                          </div>
+
+                          {formData.recurrencePattern.frequency ===
+                            "weekly" && (
+                            <div>
+                              <Label className="text-sm font-medium">
+                                Days of Week
+                              </Label>
+                              <div className="mt-1 flex gap-2 flex-wrap">
+                                {[
+                                  "Sunday",
+                                  "Monday",
+                                  "Tuesday",
+                                  "Wednesday",
+                                  "Thursday",
+                                  "Friday",
+                                  "Saturday",
+                                ].map((day) => (
+                                  <label
+                                    key={day}
+                                    className="flex items-center space-x-1 cursor-pointer"
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={formData.recurrencePattern.daysOfWeek.includes(
+                                        day,
+                                      )}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          setFormData({
+                                            ...formData,
+                                            recurrencePattern: {
+                                              ...formData.recurrencePattern,
+                                              daysOfWeek: [
+                                                ...formData.recurrencePattern
+                                                  .daysOfWeek,
+                                                day,
+                                              ],
+                                            },
+                                          });
+                                        } else {
+                                          setFormData({
+                                            ...formData,
+                                            recurrencePattern: {
+                                              ...formData.recurrencePattern,
+                                              daysOfWeek:
+                                                formData.recurrencePattern.daysOfWeek.filter(
+                                                  (d) => d !== day,
+                                                ),
+                                            },
+                                          });
+                                        }
+                                      }}
+                                      className="w-4 h-4 text-indigo-600 rounded"
+                                    />
+                                    <span className="text-xs">
+                                      {day.slice(0, 3)}
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {formData.recurrencePattern.frequency ===
+                            "monthly" && (
+                            <div>
+                              <Label className="text-sm font-medium">
+                                Day of Month
+                              </Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                max="31"
+                                value={formData.recurrencePattern.dayOfMonth}
+                                onChange={(e) =>
+                                  setFormData({
+                                    ...formData,
+                                    recurrencePattern: {
+                                      ...formData.recurrencePattern,
+                                      dayOfMonth: parseInt(e.target.value) || 1,
+                                    },
+                                  })
+                                }
+                                className="mt-1 h-10 rounded-lg"
+                              />
+                            </div>
+                          )}
+
+                          <div>
+                            <Label className="text-sm font-medium">
+                              Recurrence End Date
+                            </Label>
+                            <Input
+                              type="date"
+                              value={formData.recurrenceEndDate}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  recurrenceEndDate: e.target.value,
+                                })
+                              }
+                              className="mt-1 h-10 rounded-lg"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
                     <Button
-                      variant="destructive"
-                      size="sm"
-                      onClick={handleBulkDelete}
-                      className="gap-2"
+                      type="submit"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold h-11"
                     >
-                      <Trash2 className="h-4 w-4" />
-                      Delete Selected
+                      Create Task
                     </Button>
                     <Button
+                      type="button"
                       variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedTasks([]);
-                        setShowBulkActions(false);
-                      }}
+                      onClick={() => setActiveTab("view")}
+                      className="rounded-xl h-11"
                     >
                       Cancel
                     </Button>
                   </div>
-                </div>
+                </form>
               </CardContent>
             </Card>
-          )}
+          </div>
+        </div>
+      )}
 
-          {/* Tasks Table */}
+      {/* Task Board - Main View */}
+      {!canAssignTasks || activeTab === "view" ? (
+        <>
           {loading ? (
-            <p className="text-center text-muted-foreground py-8">
-              Loading tasks...
-            </p>
-          ) : tasksToDisplay.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <img
-                src="/nodata.gif"
-                alt="No data found"
-                className="w-64 h-64 object-contain"
-              />
-              <p className="text-muted-foreground mt-4">
-                {canAssignTasks
-                  ? "No tasks found. Create one to get started!"
-                  : taskViewTab === "all"
-                    ? "No tasks found."
-                    : `No ${taskViewTab} tasks found.`}
-              </p>
+            <div className="flex items-center justify-center min-h-[60vh]">
+              <div className="text-center">
+                <div className="w-12 h-12 rounded-full border-4 border-slate-300 border-t-indigo-600 animate-spin mx-auto mb-4" />
+                <p className="text-slate-600 font-medium">Loading tasks...</p>
+              </div>
             </div>
           ) : (
-            <div className="overflow-x-auto border border-slate-200 rounded-lg">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200">
-                    {canAssignTasks && (
-                      <th className="px-4 py-3 text-left">
-                        <input
-                          type="checkbox"
-                          checked={
-                            selectedTasks.length === tasksToDisplay.length &&
-                            tasksToDisplay.length > 0
-                          }
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedTasks(
-                                tasksToDisplay.map((t) => t._id),
-                              );
-                              setShowBulkActions(true);
-                            } else {
-                              setSelectedTasks([]);
-                              setShowBulkActions(false);
-                            }
-                          }}
-                          className="rounded border-slate-300"
-                        />
-                      </th>
-                    )}
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Title
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Priority
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Task Type
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Assigned To
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Deadline
-                    </th>
-                    <th className="px-4 py-3 text-left font-semibold text-slate-900">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tasksToDisplay.map((task) => (
-                    <>
-                      <tr
-                        key={task._id}
-                        className={`border-b border-slate-300 hover:opacity-80 transition-all ${getRowBackgroundColor(
-                          task.status,
-                          task.priority,
-                        )} ${selectedTasks.includes(task._id) ? "ring-2 ring-[#0F6E56]" : ""}`}
+            <div className="max-w-7xl mx-auto px-6 py-6">
+              {/* Filter Bar */}
+              <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-2xl p-5 mb-6 shadow-lg">
+                <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <span className="text-base font-bold text-white">
+                      Status:
+                    </span>
+                    <div className="flex gap-2">
+                      {[
+                        "all",
+                        "completed",
+                        "inprogress",
+                        "pending",
+                        "overdue",
+                      ].map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => setTaskViewTab(status)}
+                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md ${
+                            taskViewTab === status
+                              ? "bg-white text-indigo-600 transform scale-105"
+                              : "bg-white/20 text-white hover:bg-white/30"
+                          }`}
+                        >
+                          {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 items-center">
+                    <span className="text-base font-bold text-white">
+                      Period:
+                    </span>
+                    <select
+                      value={dateFilter}
+                      onChange={(e) => setDateFilter(e.target.value)}
+                      className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-600 border-0 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="today">Today</option>
+                      <option value="thisWeek">This Week</option>
+                      <option value="thisMonth">This Month</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                  </div>
+
+                  {canAssignTasks && (
+                    <div className="flex flex-wrap gap-3 items-center">
+                      <span className="text-base font-bold text-white">
+                        User:
+                      </span>
+                      <select
+                        value={userFilter}
+                        onChange={(e) => setUserFilter(e.target.value)}
+                        className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-600 border-0 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
                       >
-                        {canAssignTasks && (
-                          <td className="px-4 py-3">
-                            <input
-                              type="checkbox"
-                              checked={selectedTasks.includes(task._id)}
-                              onChange={() => handleSelectTask(task._id)}
-                              className="rounded border-slate-300"
-                            />
-                          </td>
-                        )}
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-slate-900">
-                            {task.title}
-                          </div>
-                          {task.description && (
-                            <p className="text-xs text-muted-foreground truncate">
-                              {task.description}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge className={getPriorityColor(task.priority)}>
-                            {task.priority}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            className={
-                              task.isRecurring
-                                ? "bg-purple-100 text-purple-800 border border-purple-300"
-                                : "bg-gray-100 text-gray-800 border border-gray-300"
-                            }
-                          >
-                            {task.taskType || "One-time"}
-                            {task.isRecurring && task.recurrencePattern && (
-                              <span className="ml-1 text-xs">
-                                ({task.recurrencePattern.frequency})
-                              </span>
-                            )}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3">
-                          <Badge
-                            className={
-                              task.status === "Completed" ||
-                              task.status === "completed"
-                                ? "bg-green-500 text-white"
-                                : task.status === "In Progress" ||
-                                    task.status === "in progress"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
-                            }
-                          >
-                            {task.status || "Pending"}
-                          </Badge>
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {Array.isArray(task.assignedTo)
-                            ? task.assignedTo.map((a) => a.name).join(", ")
-                            : task.assignedTo?.name || "Unassigned"}
-                        </td>
-                        <td className="px-4 py-3 text-sm">
-                          {task.deadline ? (
-                            <div className="flex items-center gap-1">
-                              <Clock className="h-3 w-3 text-muted-foreground" />
-                              {new Date(task.deadline).toLocaleDateString()}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <button
-                            onClick={() =>
-                              setExpandedRow(
-                                expandedRow === task._id ? null : task._id,
-                              )
-                            }
-                            className="px-3 py-1 text-sm bg-slate-200 hover:bg-slate-300 rounded transition-colors"
-                          >
-                            {expandedRow === task._id ? "Hide" : "Show"}
-                          </button>
-                        </td>
+                        <option value="">All Users</option>
+                        {users.map((u) => (
+                          <option key={u._id} value={u._id}>
+                            {u.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </div>
+
+                {/* Custom Date Range */}
+                {dateFilter === "custom" && (
+                  <div className="flex gap-4 mt-4 pt-4 border-t border-white/20">
+                    <div className="flex-1">
+                      <label className="text-xs font-bold text-white mb-1 block">
+                        Start Date
+                      </label>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white text-slate-700 border-0 focus:outline-none focus:ring-2 focus:ring-white"
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <label className="text-xs font-bold text-white mb-1 block">
+                        End Date
+                      </label>
+                      <input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white text-slate-700 border-0 focus:outline-none focus:ring-2 focus:ring-white"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tasks Table */}
+              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-slate-200">
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Task
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Priority
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Assigned To
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Deadline
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Type
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                          Actions
+                        </th>
                       </tr>
-
-                      {/* Expanded Row - Actions and Details */}
-                      {expandedRow === task._id && (
-                        <tr className="bg-slate-50 border-b border-slate-200">
-                          <td
-                            colSpan={canAssignTasks ? 7 : 6}
-                            className="px-4 py-4"
-                          >
-                            <div className="space-y-4">
-                              {/* Task Details */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                {task.assignedBy && (
-                                  <div>
-                                    <p className="text-xs font-medium text-muted-foreground">
-                                      Assigned By
-                                    </p>
-                                    <p className="font-semibold">
-                                      {task.assignedBy?.name}
-                                    </p>
-                                  </div>
-                                )}
-                                {task.escalated && (
-                                  <div>
-                                    <p className="text-xs font-medium text-red-600">
-                                      <ArrowUp className="inline h-3 w-3 mr-1" />
-                                      Escalated
-                                    </p>
-                                    <p className="font-semibold text-red-700">
-                                      Yes
-                                    </p>
-                                  </div>
-                                )}
-                              </div>
-
-                              {/* Comments */}
-                              {task.comments && task.comments.length > 0 && (
-                                <div className="p-2 bg-white rounded border border-slate-200">
-                                  <p className="font-medium text-slate-700 mb-2">
-                                    Comments ({task.comments.length}):
-                                  </p>
-                                  {task.comments
-                                    .slice(-3)
-                                    .map((comment, idx) => (
-                                      <div key={idx} className="mb-1 text-xs">
-                                        <span className="font-semibold">
-                                          {comment.user?.name}:
-                                        </span>{" "}
-                                        {comment.text}
-                                      </div>
-                                    ))}
-                                </div>
-                              )}
-
-                              {/* Action Buttons */}
-                              <div className="flex flex-wrap gap-2 pt-2">
-                                {task.status === "Completed" ||
-                                task.status === "completed" ? (
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    className="gap-2 bg-green-600 hover:bg-green-700"
-                                    disabled
-                                  >
-                                    <CheckCircle2 className="h-4 w-4" />
-                                    Completed
-                                  </Button>
-                                ) : (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleComplete(task._id)}
-                                    className="gap-2"
-                                  >
-                                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                    Complete
-                                  </Button>
-                                )}
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setShowComments(task._id)}
-                                  className="gap-2"
-                                >
-                                  <MessageSquare className="h-4 w-4" />
-                                  Add Comment
-                                </Button>
-                                {canAssignTasks && (
-                                  <>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setShowReassign(task._id)}
-                                      className="gap-2"
-                                    >
-                                      <ArrowRightLeft className="h-4 w-4" />
-                                      Reassign
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => setShowEscalate(task._id)}
-                                      className="gap-2 text-orange-600 hover:text-orange-700"
-                                    >
-                                      <ArrowUp className="h-4 w-4" />
-                                      Escalate
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => handleDelete(task._id)}
-                                      className="gap-2 text-red-600 hover:text-red-700"
-                                    >
-                                      <Trash2 className="h-4 w-4" />
-                                      Delete
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-
-                              {/* Comment Form */}
-                              {showComments === task._id && (
-                                <div className="flex gap-2 pt-2 border-t border-slate-200">
-                                  <Input
-                                    placeholder="Add a comment..."
-                                    value={commentText}
-                                    onChange={(e) =>
-                                      setCommentText(e.target.value)
-                                    }
-                                    className="flex-1"
-                                  />
-                                  <Button
-                                    onClick={() => handleAddComment(task._id)}
-                                    size="sm"
-                                  >
-                                    Send
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setShowComments(null);
-                                      setCommentText("");
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              )}
-
-                              {/* Reassign Form */}
-                              {showReassign === task._id && (
-                                <div className="flex gap-2 items-end pt-2 border-t border-slate-200">
-                                  <div className="flex-1">
-                                    <Label className="text-xs">
-                                      Reassign to:
-                                    </Label>
-                                    <select
-                                      value={reassignTo}
-                                      onChange={(e) =>
-                                        setReassignTo(e.target.value)
-                                      }
-                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mt-1"
-                                    >
-                                      <option value="">Select user</option>
-                                      {users
-                                        .filter(
-                                          (u) =>
-                                            u._id !== task.assignedTo[0]?._id,
-                                        )
-                                        .map((u) => (
-                                          <option key={u._id} value={u._id}>
-                                            {u.name}
-                                          </option>
-                                        ))}
-                                    </select>
-                                  </div>
-                                  <Button
-                                    onClick={() => handleReassign(task._id)}
-                                    size="sm"
-                                  >
-                                    Reassign
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => {
-                                      setShowReassign(null);
-                                      setReassignTo("");
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
-                              )}
-
-                              {/* Escalate Form */}
-                              {showEscalate === task._id && (
-                                <div className="space-y-3 pt-2 border-t border-slate-200">
-                                  <div>
-                                    <Label className="text-xs">
-                                      Escalate to:
-                                    </Label>
-                                    <select
-                                      value={escalateTo}
-                                      onChange={(e) =>
-                                        setEscalateTo(e.target.value)
-                                      }
-                                      className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm mt-1"
-                                    >
-                                      <option value="">
-                                        Select manager/admin
-                                      </option>
-                                      {users
-                                        .filter((u) =>
-                                          ["Admin", "Manager"].includes(u.role),
-                                        )
-                                        .map((u) => (
-                                          <option key={u._id} value={u._id}>
-                                            {u.name} ({u.role})
-                                          </option>
-                                        ))}
-                                    </select>
-                                  </div>
-                                  <div>
-                                    <Label className="text-xs">Reason:</Label>
-                                    <Input
-                                      value={escalationReason}
-                                      onChange={(e) =>
-                                        setEscalationReason(e.target.value)
-                                      }
-                                      placeholder="Reason for escalation..."
-                                      className="text-sm mt-1"
-                                    />
-                                  </div>
-                                  <div className="flex gap-2">
-                                    <Button
-                                      onClick={() => handleEscalate(task._id)}
-                                      size="sm"
-                                      className="bg-[#0F6E56] hover:bg-[#0C5A45] text-white"
-                                    >
-                                      Escalate
-                                    </Button>
-                                    <Button
-                                      variant="outline"
-                                      size="sm"
-                                      onClick={() => {
-                                        setShowEscalate(null);
-                                        setEscalateTo("");
-                                        setEscalationReason("");
-                                      }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
+                    </thead>
+                    <tbody>
+                      {tasksToDisplay.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="px-4 py-12 text-center">
+                            <div className="flex flex-col items-center gap-3">
+                              <img
+                                src="/nodata.gif"
+                                alt="No data"
+                                className="w-32 h-32 object-contain"
+                              />
+                              <p className="text-slate-500 font-medium">
+                                No tasks found
+                              </p>
                             </div>
                           </td>
                         </tr>
+                      ) : (
+                        tasksToDisplay.map((task) => {
+                          const status =
+                            task.status?.toLowerCase() === "completed"
+                              ? "Completed"
+                              : task.isOverdue
+                                ? "Overdue"
+                                : task.status?.toLowerCase() === "in progress"
+                                  ? "In Progress"
+                                  : "Pending";
+
+                          const statusColor =
+                            {
+                              Completed:
+                                "bg-emerald-100 text-emerald-800 border-emerald-300",
+                              "In Progress":
+                                "bg-blue-100 text-blue-800 border-blue-300",
+                              Pending:
+                                "bg-amber-100 text-amber-800 border-amber-300",
+                              Overdue: "bg-red-100 text-red-800 border-red-300",
+                            }[status] ||
+                            "bg-slate-100 text-slate-800 border-slate-300";
+
+                          const rowBgColor = getRowBackgroundColor(
+                            task.status,
+                            task.priority,
+                          );
+
+                          return (
+                            <>
+                              <tr
+                                key={task._id}
+                                className={`${rowBgColor} border-b border-slate-100 hover:opacity-80 transition-opacity ${canAssignTasks && task.status === "Completed" ? "cursor-pointer" : ""}`}
+                                onClick={() =>
+                                  canAssignTasks &&
+                                  task.status === "Completed" &&
+                                  setExpandedTask(
+                                    expandedTask === task._id ? null : task._id,
+                                  )
+                                }
+                              >
+                                <td className="px-4 py-3 max-w-xs">
+                                  <div>
+                                    <p className="font-semibold text-slate-800 text-sm truncate">
+                                      {task.title}
+                                    </p>
+                                    {task.description && (
+                                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 truncate">
+                                        {task.description}
+                                      </p>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColor}`}
+                                  >
+                                    {status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}
+                                  >
+                                    {task.priority}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    {task.assignedTo &&
+                                    task.assignedTo.length > 0 ? (
+                                      <div className="flex flex-wrap gap-1">
+                                        {task.assignedTo
+                                          .slice(0, 3)
+                                          .map((user, idx) => (
+                                            <span
+                                              key={idx}
+                                              className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
+                                              title={user.name || user}
+                                            >
+                                              {user.name || "User"}
+                                            </span>
+                                          ))}
+                                        {task.assignedTo.length > 3 && (
+                                          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                                            +{task.assignedTo.length - 3} more
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <span className="text-xs text-slate-400">
+                                        Unassigned
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className="text-xs text-slate-600">
+                                    {task.deadline
+                                      ? new Date(
+                                          task.deadline,
+                                        ).toLocaleDateString("en-IN", {
+                                          day: "numeric",
+                                          month: "short",
+                                          year: "numeric",
+                                        })
+                                      : "No deadline"}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span
+                                    className={`text-xs font-medium ${task.isRecurring ? "text-purple-600 bg-purple-50 px-2 py-1 rounded" : "text-slate-500"}`}
+                                  >
+                                    {task.taskType || "One-time"}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-1">
+                                    {task.status !== "Completed" && (
+                                      <button
+                                        onClick={() => handleComplete(task._id)}
+                                        className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                        title="Mark as complete"
+                                      >
+                                        <CheckCircle2 className="w-4 h-4" />
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => handleDelete(task._id)}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                      title="Delete task"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                              {showCompleteInput === task._id && (
+                                <tr className="bg-emerald-50">
+                                  <td colSpan="7" className="px-4 py-4">
+                                    <div className="flex items-center gap-3">
+                                      <label className="text-sm font-medium text-slate-700">
+                                        Completion Proof{" "}
+                                        <span className="text-red-500">*</span>
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={completionProof}
+                                        onChange={(e) =>
+                                          setCompletionProof(e.target.value)
+                                        }
+                                        placeholder="Enter proof (URL, description...)"
+                                        className="flex-1 max-w-md px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            handleCompleteSubmit(task._id);
+                                          } else if (e.key === "Escape") {
+                                            setShowCompleteInput(null);
+                                            setCompletionProof("");
+                                          }
+                                        }}
+                                      />
+                                      <button
+                                        onClick={() =>
+                                          handleCompleteSubmit(task._id)
+                                        }
+                                        className="px-4 py-2 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                                      >
+                                        Submit
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          setShowCompleteInput(null);
+                                          setCompletionProof("");
+                                        }}
+                                        className="px-4 py-2 text-sm bg-slate-200 text-slate-600 rounded hover:bg-slate-300"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                              {expandedTask === task._id &&
+                                canAssignTasks &&
+                                task.status === "Completed" && (
+                                  <tr className="bg-blue-50">
+                                    <td colSpan="7" className="px-4 py-4">
+                                      <div className="space-y-3">
+                                        <h4 className="text-sm font-bold text-slate-800">
+                                          Completion Details
+                                        </h4>
+                                        <div className="bg-white rounded-lg p-4 border border-slate-200">
+                                          <p className="text-xs font-semibold text-slate-600 mb-2">
+                                            Completion Proof:
+                                          </p>
+                                          <p className="text-sm text-slate-700">
+                                            {(task.history &&
+                                              task.history.find(
+                                                (h) => h.status === "Completed",
+                                              )?.note) ||
+                                              "No completion proof provided"}
+                                          </p>
+                                          {task.history &&
+                                            task.history.find(
+                                              (h) => h.status === "Completed",
+                                            )?.changedAt && (
+                                              <p className="text-xs text-slate-500 mt-2">
+                                                Completed on:{" "}
+                                                {new Date(
+                                                  task.history.find(
+                                                    (h) =>
+                                                      h.status === "Completed",
+                                                  ).changedAt,
+                                                ).toLocaleString()}
+                                              </p>
+                                            )}
+                                        </div>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                )}
+                            </>
+                          );
+                        })
                       )}
-                    </>
-                  ))}
-                </tbody>
-              </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
         </>

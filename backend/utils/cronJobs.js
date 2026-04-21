@@ -3,6 +3,8 @@
 
 const cron = require("node-cron");
 const Task = require("../models/Task");
+const User = require("../models/User");
+const { sendTaskReminderEmail } = require("./emailService");
 
 /**
  * Generate next occurrence of a recurring task
@@ -182,6 +184,60 @@ const generateRecurringTasks = async () => {
   }
 };
 
+/**
+ * Send reminder emails for pending tasks approaching deadline
+ * Runs every day at 9 AM
+ */
+const sendPendingTaskReminders = async () => {
+  try {
+    console.log("📧 Checking for pending tasks approaching deadline...");
+
+    // Find pending tasks with deadlines within the next 2 days
+    const twoDaysFromNow = new Date();
+    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+
+    const pendingTasks = await Task.find({
+      status: { $in: ["Pending", "In Progress"] },
+      deadline: { $lte: twoDaysFromNow, $gt: new Date() },
+    }).populate("assignedTo assignedBy");
+
+    console.log(
+      `Found ${pendingTasks.length} pending tasks approaching deadline`,
+    );
+
+    for (const task of pendingTasks) {
+      const assignees = Array.isArray(task.assignedTo)
+        ? task.assignedTo
+        : [task.assignedTo];
+
+      for (const assignee of assignees) {
+        if (assignee && assignee.email) {
+          try {
+            await sendTaskReminderEmail(assignee.email, assignee.name, {
+              title: task.title,
+              description: task.description,
+              deadline: task.deadline,
+              priority: task.priority,
+            });
+            console.log(
+              `✅ Reminder email sent to ${assignee.email} for task: ${task.title}`,
+            );
+          } catch (emailError) {
+            console.error(
+              `Failed to send reminder email to ${assignee.email}:`,
+              emailError,
+            );
+          }
+        }
+      }
+    }
+
+    console.log("✨ Pending task reminder emails completed");
+  } catch (error) {
+    console.error("Error in pending task reminders:", error);
+  }
+};
+
 const initCronJobs = () => {
   console.log("📅 Cron Jobs initialized");
 
@@ -189,6 +245,12 @@ const initCronJobs = () => {
   cron.schedule("0 2 * * *", async () => {
     console.log("⏰ Running recurring task generation...");
     await generateRecurringTasks();
+  });
+
+  // Send pending task reminders every day at 9 AM
+  cron.schedule("0 9 * * *", async () => {
+    console.log("⏰ Running pending task reminders...");
+    await sendPendingTaskReminders();
   });
 
   // Alternative: Run every hour for development/testing
@@ -203,4 +265,5 @@ module.exports = {
   initCronJobs,
   generateRecurringTasks,
   generateNextTaskOccurrence,
+  sendPendingTaskReminders,
 };

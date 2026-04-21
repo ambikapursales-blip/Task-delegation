@@ -10,84 +10,122 @@ import {
   Clock,
   CheckSquare,
   ArrowUpRight,
+  TrendingUp,
+  BarChart2,
+  List,
+  Filter,
+  RefreshCw,
 } from "lucide-react";
 import { dashboardAPI, reportsAPI } from "@/lib/api";
+import { taskAPI } from "@/lib/api";
 import Link from "next/link";
+import Toast from "@/components/Toast";
 import Chart from "chart.js/auto";
 
-/* ─── Design Tokens (kept for Chart.js only — cannot use Tailwind in JS) ── */
+/* ─── Design Tokens ─────────────────────────────────────────────── */
 const T = {
-  pageBg: "#f4f1ec",
-  surface: "#faf8f4",
-  surfaceAlt: "#ffffff",
-  ink1: "#1a1410",
-  ink2: "#4a3f35",
-  ink3: "#9e8e80",
-  ink4: "#c4b8ad",
-  terracotta: "#0F6E56",
-  terracottaLight: "#E8F5ED",
-  terracottaBorder: "#C3E6D6",
-  sage: "#4a7c5f",
-  sageLight: "#e6f2ec",
-  sageBorder: "#b5d5c2",
-  indigo: "#3d5a9e",
-  indigoLight: "#eaeefc",
-  indigoBorder: "#b8c6ee",
-  amber: "#c07a1e",
-  amberLight: "#fdf3e3",
-  amberBorder: "#e8ceaa",
-  border1: "#e4ddd4",
-  border2: "#d4ccc2",
+  // Purple theme from sidebar
+  primary: "#7C3AED",
+  primaryDark: "#6D28D9",
+  primaryLight: "#8B5CF6",
+  primaryGradStart: "#7C3AED",
+  primaryGradEnd: "#5B21B6",
+  primaryBg: "#EDE9FE",
+  primaryBorder: "#C4B5FD",
+
+  // Page background - light lavender/blue-gray
+  pageBg: "#F0F0F7",
+  surface: "#FFFFFF",
+  surfaceAlt: "#F8F7FF",
+
+  // Text
+  ink1: "#1E1B4B",
+  ink2: "#3730A3",
+  ink3: "#6B7280",
+  ink4: "#9CA3AF",
+
+  // Status colors
+  emerald: "#059669",
+  emeraldLight: "#D1FAE5",
+  emeraldBorder: "#6EE7B7",
+
+  amber: "#D97706",
+  amberLight: "#FEF3C7",
+  amberBorder: "#FCD34D",
+
+  rose: "#DC2626",
+  roseLight: "#FEE2E2",
+  roseBorder: "#FCA5A5",
+
+  blue: "#2563EB",
+  blueLight: "#DBEAFE",
+  blueBorder: "#93C5FD",
+
+  // Borders
+  border1: "#E5E7EB",
+  border2: "#D1D5DB",
 };
 
 /* ─── Stat Card ─────────────────────────────────────────────────── */
-function StatCard({ title, value, icon, trend, accent }) {
+function StatCard({ title, value, icon, trend, trendUp, accent }) {
   const variants = {
-    terracotta: {
-      strip: "bg-[#0F6E56]",
-      iconBg: "bg-[#E8F5ED] border border-[#C3E6D6] text-[#0F6E56]",
-      trendBg: "bg-[#E8F5ED] border border-[#C3E6D6] text-[#0F6E56]",
+    purple: {
+      gradient: "from-[#7C3AED] to-[#5B21B6]",
+      iconBg: "bg-white/20",
+      trendBg: "bg-white/20 text-white",
+      textColor: "text-white",
+      border: "border-[#7C3AED]/20",
     },
-    sage: {
-      strip: "bg-[#4a7c5f]",
-      iconBg: "bg-[#e6f2ec] border border-[#b5d5c2] text-[#4a7c5f]",
-      trendBg: "bg-[#e6f2ec] border border-[#b5d5c2] text-[#4a7c5f]",
-    },
-    indigo: {
-      strip: "bg-[#3d5a9e]",
-      iconBg: "bg-[#eaeefc] border border-[#b8c6ee] text-[#3d5a9e]",
-      trendBg: "bg-[#eaeefc] border border-[#b8c6ee] text-[#3d5a9e]",
+    emerald: {
+      gradient: "from-[#059669] to-[#047857]",
+      iconBg: "bg-white/20",
+      trendBg: "bg-white/20 text-white",
+      textColor: "text-white",
+      border: "border-[#059669]/20",
     },
     amber: {
-      strip: "bg-[#c07a1e]",
-      iconBg: "bg-[#fdf3e3] border border-[#e8ceaa] text-[#c07a1e]",
-      trendBg: "bg-[#fdf3e3] border border-[#e8ceaa] text-[#c07a1e]",
+      gradient: "from-[#D97706] to-[#B45309]",
+      iconBg: "bg-white/20",
+      trendBg: "bg-white/20 text-white",
+      textColor: "text-white",
+      border: "border-[#D97706]/20",
+    },
+    blue: {
+      gradient: "from-[#2563EB] to-[#1D4ED8]",
+      iconBg: "bg-white/20",
+      trendBg: "bg-white/20 text-white",
+      textColor: "text-white",
+      border: "border-[#2563EB]/20",
     },
   };
-  const v = variants[accent] || variants.indigo;
+  const v = variants[accent] || variants.purple;
 
   return (
-    <div className="relative overflow-hidden bg-white border border-[#e4ddd4] rounded-[18px] px-6 py-[22px] shadow-[0_1px_4px_rgba(60,40,20,0.06),0_4px_16px_rgba(60,40,20,0.04)] transition-all duration-200 hover:-translate-y-[3px] hover:shadow-[0_4px_20px_rgba(60,40,20,0.12)] cursor-default">
-      {/* accent strip */}
-      <div
-        className={`absolute top-0 left-0 right-0 h-[3px] rounded-t-[18px] ${v.strip}`}
-      />
+    <div
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${v.gradient} p-5 shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default`}
+    >
+      {/* Background decoration */}
+      <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+      <div className="absolute -bottom-6 -left-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
 
-      <div className="flex justify-between items-start mt-1">
-        <div>
-          <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-[#9e8e80] m-0">
+      <div className="relative flex justify-between items-start">
+        <div className="flex-1">
+          <p className="text-[11px] font-bold tracking-widest uppercase text-white/70 mb-2">
             {title}
           </p>
-          <p className="text-[40px] font-normal text-[#1a1410] mt-[6px] mb-[6px] font-['Playfair_Display',serif] tracking-[-0.02em] leading-none">
+          <p
+            className="text-4xl font-bold text-white mb-3 leading-none"
+            style={{ fontFamily: "'DM Sans', sans-serif" }}
+          >
             {value}
           </p>
           <span
-            className={`text-xs font-semibold px-2 py-[2px] rounded-full ${v.trendBg}`}
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${v.trendBg}`}
           >
-            {trend}
+            {trendUp ? "↑" : "→"} {trend}
           </span>
         </div>
-        <div className={`p-3 rounded-xl flex-shrink-0 ${v.iconBg}`}>{icon}</div>
+        <div className={`p-3 rounded-xl ${v.iconBg} text-white`}>{icon}</div>
       </div>
     </div>
   );
@@ -97,25 +135,60 @@ function StatCard({ title, value, icon, trend, accent }) {
 function Card({ children, className = "" }) {
   return (
     <div
-      className={`bg-white border border-[#e4ddd4] rounded-[18px] px-7 py-6 shadow-[0_1px_4px_rgba(60,40,20,0.05),0_4px_16px_rgba(60,40,20,0.03)] ${className}`}
+      className={`bg-white border border-[#E5E7EB] rounded-2xl shadow-sm ${className}`}
     >
       {children}
     </div>
   );
 }
 
-/* ─── Section Label ──────────────────────────────────────────────── */
-function SectionLabel({ children }) {
+/* ─── Card Header ────────────────────────────────────────────────── */
+function CardHeader({ title, subtitle, action }) {
   return (
-    <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-[#c4b8ad] m-0 mb-[6px]">
-      {children}
-    </p>
+    <div className="flex items-center justify-between px-6 py-4 border-b border-[#F3F4F6]">
+      <div>
+        <h3 className="text-sm font-bold text-[#1E1B4B]">{title}</h3>
+        {subtitle && (
+          <p className="text-xs text-[#9CA3AF] mt-0.5">{subtitle}</p>
+        )}
+      </div>
+      {action}
+    </div>
   );
 }
 
-/* ─── Divider ────────────────────────────────────────────────────── */
-function Divider() {
-  return <div className="h-px bg-[#e4ddd4] my-4" />;
+/* ─── Status Badge ────────────────────────────────────────────────── */
+function StatusBadge({ status }) {
+  const map = {
+    Completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
+    "In Progress": "bg-blue-100 text-blue-700 border-blue-200",
+    Pending: "bg-amber-100 text-amber-700 border-amber-200",
+    Overdue: "bg-red-100 text-red-700 border-red-200",
+  };
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${map[status] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+    >
+      {status}
+    </span>
+  );
+}
+
+/* ─── Priority Badge ─────────────────────────────────────────────── */
+function PriorityBadge({ priority }) {
+  const map = {
+    Critical: "bg-red-100 text-red-700 border-red-200",
+    High: "bg-orange-100 text-orange-700 border-orange-200",
+    Medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    Low: "bg-green-100 text-green-700 border-green-200",
+  };
+  return (
+    <span
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${map[priority] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+    >
+      {priority}
+    </span>
+  );
 }
 
 /* ─── Page ───────────────────────────────────────────────────────── */
@@ -133,12 +206,16 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [recentActivities, setRecentActivities] = useState([]);
+  const [dashboardTasks, setDashboardTasks] = useState([]);
+  const [viewMode, setViewMode] = useState("table");
 
-  // Filter states for admin
   const [selectedUser, setSelectedUser] = useState("all");
   const [timePeriod, setTimePeriod] = useState("month");
   const [statusFilter, setStatusFilter] = useState("all");
   const [usersList, setUsersList] = useState([]);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
 
   const chartRefs = {
     taskProgress: useRef(null),
@@ -158,10 +235,36 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
+        let period = timePeriod;
+        let customStartDate, customEndDate;
+
+        if (timePeriod === "today") {
+          const now = new Date();
+          customStartDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+          customStartDate.setHours(0, 0, 0, 0);
+          customEndDate = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate(),
+          );
+          customEndDate.setHours(23, 59, 59, 999);
+        } else if (timePeriod === "custom" && startDate && endDate) {
+          customStartDate = new Date(startDate);
+          customStartDate.setHours(0, 0, 0, 0);
+          customEndDate = new Date(endDate);
+          customEndDate.setHours(23, 59, 59, 999);
+        }
+
         const response = await dashboardAPI.getStats({
           userId: selectedUser === "all" ? undefined : selectedUser,
           status: statusFilter === "all" ? undefined : statusFilter,
-          period: timePeriod,
+          period,
+          startDate: customStartDate?.toISOString(),
+          endDate: customEndDate?.toISOString(),
         });
         const statsData = response.data?.stats;
         setStats({
@@ -173,16 +276,28 @@ export default function DashboardPage() {
           presentToday: statsData?.users?.active || 0,
           eventsCount: 0,
         });
+
         const analyticsRes = await reportsAPI.getDashboardAnalytics({
-          period: timePeriod,
+          period,
           userId: selectedUser === "all" ? undefined : selectedUser,
           status: statusFilter === "all" ? undefined : statusFilter,
+          startDate: customStartDate?.toISOString(),
+          endDate: customEndDate?.toISOString(),
         });
         setAnalytics(analyticsRes.data?.analytics || null);
+
         const activitiesRes = await dashboardAPI.getRecentActivities();
         setRecentActivities(activitiesRes.data?.activities || []);
 
-        // Fetch users for admin filter
+        const tasksRes = await taskAPI.getTasks({
+          userId: selectedUser === "all" ? undefined : selectedUser,
+          status: statusFilter === "all" ? undefined : statusFilter,
+          period,
+          startDate: customStartDate?.toISOString(),
+          endDate: customEndDate?.toISOString(),
+        });
+        setDashboardTasks(tasksRes.data?.tasks || []);
+
         if (isAdminOrManager) {
           try {
             const usersRes = await fetch(
@@ -207,25 +322,32 @@ export default function DashboardPage() {
       }
     };
     fetchDashboardData();
-  }, [timePeriod, selectedUser, statusFilter]);
+  }, [timePeriod, selectedUser, statusFilter, startDate, endDate]);
 
   useEffect(() => {
-    if (!loading && analytics) initializeCharts();
+    if (!loading && analytics && viewMode === "graphs") initializeCharts();
     return () =>
       Object.values(chartInstances.current).forEach((c) => c?.destroy());
-  }, [stats, analytics, loading, timePeriod, selectedUser, statusFilter]);
+  }, [
+    stats,
+    analytics,
+    loading,
+    timePeriod,
+    selectedUser,
+    statusFilter,
+    viewMode,
+  ]);
 
   const initializeCharts = () => {
-    const font = { family: "'Lato', sans-serif", size: 12 };
+    const font = { family: "'DM Sans', sans-serif", size: 12 };
     const tooltipDefaults = {
-      backgroundColor: T.surfaceAlt,
+      backgroundColor: "#1E1B4B",
       padding: 12,
-      titleColor: T.ink1,
-      bodyColor: T.ink2,
-      borderColor: T.border2,
+      titleColor: "#FFFFFF",
+      bodyColor: "#C4B5FD",
+      borderColor: "#7C3AED",
       borderWidth: 1,
       cornerRadius: 10,
-      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     };
 
     if (chartRefs.taskProgress.current) {
@@ -242,22 +364,22 @@ export default function DashboardPage() {
                 analytics?.tasks?.pending || 0,
                 analytics?.tasks?.inProgress || 0,
               ],
-              backgroundColor: [T.terracotta, T.indigo, T.sage],
-              borderColor: T.surfaceAlt,
-              borderWidth: 5,
-              hoverOffset: 8,
+              backgroundColor: ["#7C3AED", "#D97706", "#2563EB"],
+              borderColor: "#FFFFFF",
+              borderWidth: 4,
+              hoverOffset: 6,
             },
           ],
         },
         options: {
           responsive: true,
           maintainAspectRatio: true,
-          cutout: "72%",
+          cutout: "75%",
           plugins: {
             legend: {
               position: "bottom",
               labels: {
-                color: T.ink2,
+                color: "#6B7280",
                 font,
                 padding: 16,
                 usePointStyle: true,
@@ -283,6 +405,16 @@ export default function DashboardPage() {
           day: "numeric",
         }),
       );
+
+      // Create gradient
+      const gradPurple = ctx.createLinearGradient(0, 0, 0, 300);
+      gradPurple.addColorStop(0, "rgba(124,58,237,0.2)");
+      gradPurple.addColorStop(1, "rgba(124,58,237,0)");
+
+      const gradBlue = ctx.createLinearGradient(0, 0, 0, 300);
+      gradBlue.addColorStop(0, "rgba(37,99,235,0.15)");
+      gradBlue.addColorStop(1, "rgba(37,99,235,0)");
+
       chartInstances.current.taskTrend = new Chart(ctx, {
         type: "line",
         data: {
@@ -291,27 +423,27 @@ export default function DashboardPage() {
             {
               label: "Completed",
               data: trendData.map((t) => t.completed),
-              borderColor: T.terracotta,
-              backgroundColor: "rgba(193,83,58,0.08)",
+              borderColor: "#7C3AED",
+              backgroundColor: gradPurple,
               borderWidth: 2.5,
               tension: 0.4,
               fill: true,
               pointRadius: 4,
-              pointBackgroundColor: T.terracotta,
-              pointBorderColor: T.surfaceAlt,
+              pointBackgroundColor: "#7C3AED",
+              pointBorderColor: "#FFFFFF",
               pointBorderWidth: 2,
             },
             {
               label: "New Tasks",
               data: trendData.map((t) => t.created),
-              borderColor: T.indigo,
-              backgroundColor: "rgba(61,90,158,0.06)",
+              borderColor: "#2563EB",
+              backgroundColor: gradBlue,
               borderWidth: 2.5,
               tension: 0.4,
               fill: true,
               pointRadius: 4,
-              pointBackgroundColor: T.indigo,
-              pointBorderColor: T.surfaceAlt,
+              pointBackgroundColor: "#2563EB",
+              pointBorderColor: "#FFFFFF",
               pointBorderWidth: 2,
             },
           ],
@@ -323,7 +455,7 @@ export default function DashboardPage() {
             legend: {
               position: "top",
               labels: {
-                color: T.ink2,
+                color: "#6B7280",
                 font,
                 padding: 16,
                 usePointStyle: true,
@@ -335,13 +467,13 @@ export default function DashboardPage() {
           scales: {
             y: {
               beginAtZero: true,
-              grid: { color: "rgba(60,40,20,0.06)" },
-              ticks: { color: T.ink3, font },
+              grid: { color: "rgba(124,58,237,0.06)" },
+              ticks: { color: "#9CA3AF", font },
               border: { display: false },
             },
             x: {
               grid: { display: false },
-              ticks: { color: T.ink3, font },
+              ticks: { color: "#9CA3AF", font },
               border: { display: false },
             },
           },
@@ -365,13 +497,13 @@ export default function DashboardPage() {
               label: "Tasks",
               data: deptData.map((d) => d.value),
               backgroundColor: [
-                T.terracotta,
-                T.indigo,
-                T.sage,
-                T.amber,
-                "#8b5cf6",
+                "#7C3AED",
+                "#2563EB",
+                "#059669",
+                "#D97706",
+                "#8B5CF6",
               ],
-              borderRadius: 6,
+              borderRadius: 8,
               borderSkipped: false,
             },
           ],
@@ -384,13 +516,13 @@ export default function DashboardPage() {
           scales: {
             x: {
               beginAtZero: true,
-              grid: { color: "rgba(60,40,20,0.06)" },
-              ticks: { color: T.ink3, font },
+              grid: { color: "rgba(124,58,237,0.06)" },
+              ticks: { color: "#9CA3AF", font },
               border: { display: false },
             },
             y: {
               grid: { display: false },
-              ticks: { color: T.ink2, font },
+              ticks: { color: "#374151", font: { ...font, weight: "600" } },
               border: { display: false },
             },
           },
@@ -405,104 +537,157 @@ export default function DashboardPage() {
       l.id = "dash-fonts";
       l.rel = "stylesheet";
       l.href =
-        "https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Lato:wght@400;500;600;700&display=swap";
+        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap";
       document.head.appendChild(l);
     }
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#f4f1ec] flex items-center justify-center font-['Lato',sans-serif]">
+      <div className="min-h-screen bg-[#F0F0F7] flex items-center justify-center">
         <div className="text-center">
-          <div className="text-[28px] font-semibold text-[#0F6E56] mb-3">
-            Loading...
-          </div>
-          <div className="text-sm text-[#9e8e80]">Preparing your dashboard</div>
+          <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-semibold text-[#6B7280]">
+            Loading dashboard…
+          </p>
         </div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-[#f4f1ec] font-['Lato',sans-serif] text-[#4a3f35]">
-      {/* ── Header ── */}
-      <div className="relative px-12 pt-10 pb-9 bg-white border-b border-[#e4ddd4] overflow-hidden">
-        {/* dot pattern */}
-        <div
-          className="absolute inset-0 opacity-40 pointer-events-none"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, #c4b8ad 1px, transparent 1px)",
-            backgroundSize: "28px 28px",
-          }}
-        />
-        {/* warm glow */}
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            bottom: -40,
-            right: 80,
-            width: 320,
-            height: 200,
-            background:
-              "radial-gradient(ellipse, rgba(193,83,58,0.10) 0%, transparent 70%)",
-          }}
-        />
+  const selectClass =
+    "w-full px-3 py-2 bg-[#F8F7FF] border border-[#E5E7EB] rounded-lg text-sm text-[#1E1B4B] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-transparent transition-all";
+  const inputClass =
+    "w-full px-3 py-2 bg-[#F8F7FF] border border-[#E5E7EB] rounded-lg text-sm text-[#1E1B4B] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-transparent transition-all";
 
-        <div className="relative flex justify-between items-end flex-wrap gap-4">
-          <div>
-            <p className="text-[11px] tracking-[0.16em] uppercase text-[#0F6E56] font-bold m-0 mb-[10px]">
+  return (
+    <div
+      className="min-h-screen bg-[#F0F0F7]"
+      style={{ fontFamily: "'DM Sans', sans-serif" }}
+    >
+      {/* ── Top Header Bar ── */}
+      <div className="bg-white border-b border-[#E5E7EB] px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="text-xs font-bold tracking-widest uppercase text-[#7C3AED]">
               {new Date().toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "long",
                 day: "numeric",
               })}
-            </p>
-            <h1 className="text-[44px] font-normal text-[#1a1410] m-0 mb-2 font-['Playfair_Display',serif] tracking-[-0.02em] leading-[1.1]">
-              Dashboard
-            </h1>
-            <div className="flex items-center gap-[10px]">
-              <span className="text-[15px] text-[#9e8e80]">
-                Welcome back,{" "}
-                <strong className="text-[#1a1410] font-semibold">
-                  {user?.name}
-                </strong>
-              </span>
-              <span className="text-[11px] font-bold tracking-[0.08em] uppercase px-3 py-[3px] rounded-full bg-[#E8F5ED] border border-[#C3E6D6] text-[#0F6E56]">
-                {user?.role}
-              </span>
-            </div>
+            </span>
           </div>
+          <h1
+            className="text-2xl font-bold text-[#1E1B4B] leading-tight"
+            style={{ fontFamily: "'DM Serif Display', serif" }}
+          >
+            Dashboard
+          </h1>
+        </div>
+
+        <div className="flex items-center gap-3">
+          {/* View Toggle */}
+          <div className="flex items-center bg-[#F0F0F7] rounded-xl p-1 gap-1">
+            <button
+              onClick={() => setViewMode("table")}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                viewMode === "table"
+                  ? "bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white shadow-md shadow-purple-200"
+                  : "text-[#9CA3AF] hover:text-[#7C3AED]"
+              }`}
+            >
+              <List size={14} />
+              Table
+            </button>
+            <button
+              onClick={() => setViewMode("graphs")}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+                viewMode === "graphs"
+                  ? "bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white shadow-md shadow-purple-200"
+                  : "text-[#9CA3AF] hover:text-[#7C3AED]"
+              }`}
+            >
+              <BarChart2 size={14} />
+              Graphs
+            </button>
+          </div>
+
+          {/* Filter toggle */}
+          {isAdminOrManager && (
+            <button
+              onClick={() => setShowFilters((v) => !v)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
+                showFilters
+                  ? "bg-[#EDE9FE] border-[#C4B5FD] text-[#7C3AED]"
+                  : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+              }`}
+            >
+              <Filter size={14} />
+              Filters
+            </button>
+          )}
 
           {isAdminOrManager && (
             <Link href="/tasks">
-              <button className="flex items-center gap-2 px-[22px] py-[11px] rounded-xl bg-[#0F6E56] border-none text-white text-sm font-semibold cursor-pointer font-['Lato',sans-serif] shadow-[0_2px_8px_rgba(15,110,86,0.3)] transition-all duration-200 hover:-translate-y-[2px] hover:shadow-[0_6px_20px_rgba(15,110,86,0.35)]">
-                <Plus size={16} /> New Task
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white text-xs font-bold shadow-lg shadow-purple-200 hover:-translate-y-0.5 hover:shadow-purple-300 transition-all duration-200">
+                <Plus size={15} />
+                New Task
               </button>
             </Link>
           )}
+
+          {/* User chip */}
+          <div className="flex items-center gap-2 pl-3 border-l border-[#E5E7EB]">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] flex items-center justify-center text-white text-xs font-bold">
+              {user?.name
+                ?.split(" ")
+                .map((n) => n[0])
+                .join("")
+                .toUpperCase()
+                .slice(0, 2)}
+            </div>
+            <div className="hidden md:block">
+              <p className="text-xs font-bold text-[#1E1B4B] leading-tight">
+                {user?.name}
+              </p>
+              <p className="text-[10px] text-[#9CA3AF]">{user?.role}</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="px-12 pt-9 pb-12 max-w-[1440px] mx-auto">
+      <div className="px-8 pt-6 pb-10 max-w-[1440px] mx-auto">
         {error && (
-          <div className="mb-6 px-[18px] py-3 rounded-xl bg-[#E8F5ED] border border-[#C3E6D6] text-[#0F6E56] flex items-center gap-[10px] text-sm">
-            <AlertCircle size={16} /> {error}
-          </div>
+          <Toast type="error" message={error} onClose={() => setError("")} />
         )}
 
-        {/* ── Filters for Admin/Manager ── */}
-        {isAdminOrManager && (
-          <div className="mb-8 p-4 bg-white border border-[#e4ddd4] rounded-xl">
-            <div className="flex flex-wrap gap-4 items-center">
-              <div className="flex-1 min-w-[200px]">
-                <label className="text-xs font-semibold text-[#9e8e80] uppercase tracking-wider mb-2 block">
+        {/* ── Filters Panel ── */}
+        {isAdminOrManager && showFilters && (
+          <div className="mb-6 bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-bold text-[#1E1B4B]">Filters</h3>
+              <button
+                onClick={() => {
+                  setSelectedUser("all");
+                  setTimePeriod("month");
+                  setStatusFilter("all");
+                  setStartDate("");
+                  setEndDate("");
+                }}
+                className="flex items-center gap-1.5 text-xs text-[#7C3AED] font-semibold hover:underline"
+              >
+                <RefreshCw size={12} /> Reset
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex-1 min-w-[180px]">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
                   User
                 </label>
                 <select
                   value={selectedUser}
                   onChange={(e) => setSelectedUser(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#d4ccc2] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6E56]"
+                  className={selectClass}
                 >
                   <option value="all">All Users</option>
                   {usersList
@@ -514,29 +699,58 @@ export default function DashboardPage() {
                     ))}
                 </select>
               </div>
-              <div className="flex-1 min-w-[150px]">
-                <label className="text-xs font-semibold text-[#9e8e80] uppercase tracking-wider mb-2 block">
-                  Time Period
+              <div className="flex-1 min-w-[160px]">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                  Period
                 </label>
                 <select
                   value={timePeriod}
                   onChange={(e) => setTimePeriod(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#d4ccc2] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6E56]"
+                  className={selectClass}
                 >
+                  <option value="today">Today</option>
                   <option value="week">This Week</option>
                   <option value="month">This Month</option>
                   <option value="quarter">This Quarter</option>
                   <option value="year">This Year</option>
+                  <option value="all">All Time</option>
+                  <option value="custom">Custom Range</option>
                 </select>
               </div>
-              <div className="flex-1 min-w-[150px]">
-                <label className="text-xs font-semibold text-[#9e8e80] uppercase tracking-wider mb-2 block">
+              {timePeriod === "custom" && (
+                <>
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                      Start Date
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[140px]">
+                    <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                      End Date
+                    </label>
+                    <input
+                      type="date"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      className={inputClass}
+                    />
+                  </div>
+                </>
+              )}
+              <div className="flex-1 min-w-[160px]">
+                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
                   Status
                 </label>
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#d4ccc2] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#0F6E56]"
+                  className={selectClass}
                 >
                   <option value="all">All Status</option>
                   <option value="completed">Completed</option>
@@ -545,46 +759,38 @@ export default function DashboardPage() {
                   <option value="overdue">Overdue</option>
                 </select>
               </div>
-              <button
-                onClick={() => {
-                  setSelectedUser("all");
-                  setTimePeriod("month");
-                  setStatusFilter("all");
-                }}
-                className="px-4 py-2 text-sm font-medium text-[#9e8e80] hover:text-[#0F6E56] transition-colors"
-              >
-                Reset Filters
-              </button>
             </div>
           </div>
         )}
 
         {/* ── Stats Row ── */}
-        <div className="mb-8">
-          <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-[#c4b8ad] m-0 mb-[14px]">
-            At a glance
+        <div className="mb-6">
+          <p className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] mb-3">
+            Overview
           </p>
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               title="Total Tasks"
               value={analytics?.tasks?.total || 0}
               icon={<CheckSquare size={18} />}
               trend="+12% this month"
-              accent="indigo"
+              trendUp
+              accent="purple"
             />
             <StatCard
               title="Completed"
               value={analytics?.tasks?.completed || 0}
               icon={<CheckCircle2 size={18} />}
-              trend={`${completionRate}% rate`}
-              accent="terracotta"
+              trend={`${completionRate}% completion`}
+              trendUp
+              accent="emerald"
             />
             <StatCard
               title="Pending"
               value={analytics?.tasks?.pending || 0}
               icon={<Clock size={18} />}
               trend={
-                analytics?.tasks?.pending > 0 ? "Action needed" : "All clear"
+                analytics?.tasks?.pending > 0 ? "Needs attention" : "All clear"
               }
               accent="amber"
             />
@@ -594,272 +800,216 @@ export default function DashboardPage() {
                 value={analytics?.users?.active || 0}
                 icon={<Users size={18} />}
                 trend="Online now"
-                accent="sage"
+                accent="blue"
               />
             )}
           </div>
         </div>
 
         {/* ── Main Grid ── */}
-        <div className="grid grid-cols-[1fr_340px] gap-6 items-start">
-          {/* Left column */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start">
+          {/* ── Left Column ── */}
           <div className="flex flex-col gap-6">
-            {/* Progress Overview */}
-            <Card>
-              <div className="flex justify-between items-center mb-5">
-                <div>
-                  <SectionLabel>Task breakdown</SectionLabel>
-                  <h2 className="m-0 text-[22px] font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                    Progress Overview
-                  </h2>
-                </div>
-                <div className="px-4 py-[6px] rounded-full bg-[#E8F5ED] border border-[#C3E6D6] text-[#0F6E56] text-[13px] font-bold">
-                  {completionRate}% done
-                </div>
-              </div>
-              <div className="grid grid-cols-[180px_1fr] gap-7 items-center">
-                <div className="relative w-[180px] h-[180px]">
-                  <canvas ref={chartRefs.taskProgress} />
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <span className="text-[30px] font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                      {completionRate}%
+            {viewMode === "table" ? (
+              /* Tasks Table */
+              <Card>
+                <CardHeader
+                  title="Tasks Overview"
+                  subtitle={`Showing ${dashboardTasks.length} tasks`}
+                  action={
+                    <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED]">
+                      {timePeriod === "all"
+                        ? "All Time"
+                        : timePeriod.charAt(0).toUpperCase() +
+                          timePeriod.slice(1)}
                     </span>
-                    <span className="text-[10px] text-[#c4b8ad] tracking-[0.1em] font-bold uppercase">
-                      Complete
-                    </span>
+                  }
+                />
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="bg-[#F8F7FF]">
+                        {[
+                          "Task",
+                          "Status",
+                          "Priority",
+                          "Assigned To",
+                          "Deadline",
+                        ].map((h) => (
+                          <th
+                            key={h}
+                            className="px-5 py-3 text-left text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest first:pl-6 last:pr-6"
+                          >
+                            {h}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#F3F4F6]">
+                      {dashboardTasks.length === 0 ? (
+                        <tr>
+                          <td colSpan="5" className="px-6 py-16 text-center">
+                            <div className="flex flex-col items-center gap-3">
+                              <div className="w-16 h-16 rounded-2xl bg-[#EDE9FE] flex items-center justify-center">
+                                <CheckSquare
+                                  size={28}
+                                  className="text-[#C4B5FD]"
+                                />
+                              </div>
+                              <p className="text-sm font-semibold text-[#9CA3AF]">
+                                No tasks found
+                              </p>
+                              <p className="text-xs text-[#C4B5FD]">
+                                Try adjusting your filters
+                              </p>
+                            </div>
+                          </td>
+                        </tr>
+                      ) : (
+                        dashboardTasks.slice(0, 10).map((task) => {
+                          const status =
+                            task.status?.toLowerCase() === "completed"
+                              ? "Completed"
+                              : task.isOverdue
+                                ? "Overdue"
+                                : task.status?.toLowerCase() === "in progress"
+                                  ? "In Progress"
+                                  : "Pending";
+
+                          return (
+                            <tr
+                              key={task._id}
+                              className="hover:bg-[#F8F7FF] transition-colors group"
+                            >
+                              <td className="px-5 py-3.5 pl-6 max-w-xs">
+                                <p className="font-semibold text-[#1E1B4B] text-sm truncate">
+                                  {task.title}
+                                </p>
+                                {task.description && (
+                                  <p className="text-xs text-[#9CA3AF] mt-0.5 truncate">
+                                    {task.description}
+                                  </p>
+                                )}
+                              </td>
+                              <td className="px-5 py-3.5">
+                                <StatusBadge status={status} />
+                              </td>
+                              <td className="px-5 py-3.5">
+                                <PriorityBadge priority={task.priority} />
+                              </td>
+                              <td className="px-5 py-3.5">
+                                {task.assignedTo?.length > 0 ? (
+                                  <div className="flex flex-wrap gap-1">
+                                    {task.assignedTo.slice(0, 2).map((u, i) => (
+                                      <span
+                                        key={i}
+                                        className="text-xs font-medium text-[#7C3AED] bg-[#EDE9FE] px-2 py-0.5 rounded-md"
+                                      >
+                                        {u.name || "User"}
+                                      </span>
+                                    ))}
+                                    {task.assignedTo.length > 2 && (
+                                      <span className="text-xs font-medium text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-md">
+                                        +{task.assignedTo.length - 2}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-[#C4B5FD]">
+                                    Unassigned
+                                  </span>
+                                )}
+                              </td>
+                              <td className="px-5 py-3.5 pr-6">
+                                <span className="text-xs font-medium text-[#6B7280]">
+                                  {task.deadline
+                                    ? new Date(
+                                        task.deadline,
+                                      ).toLocaleDateString("en-IN", {
+                                        day: "numeric",
+                                        month: "short",
+                                        year: "numeric",
+                                      })
+                                    : "No deadline"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            ) : (
+              /* Graphs View */
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Doughnut */}
+                <Card>
+                  <CardHeader
+                    title="Task Distribution"
+                    subtitle="Status breakdown"
+                  />
+                  <div className="p-6">
+                    <canvas ref={chartRefs.taskProgress} />
                   </div>
-                </div>
-                <div className="flex flex-col gap-[10px]">
-                  {[
-                    {
-                      label: "Completed",
-                      value: analytics?.tasks?.completed || 0,
-                      valueCls: "text-[#0F6E56]",
-                      wrapCls: "bg-[#E8F5ED] border border-[#C3E6D6]",
-                    },
-                    {
-                      label: "Pending",
-                      value: analytics?.tasks?.pending || 0,
-                      valueCls: "text-[#3d5a9e]",
-                      wrapCls: "bg-[#eaeefc] border border-[#b8c6ee]",
-                    },
-                    {
-                      label: "In Progress",
-                      value: analytics?.tasks?.inProgress || 0,
-                      valueCls: "text-[#4a7c5f]",
-                      wrapCls: "bg-[#e6f2ec] border border-[#b5d5c2]",
-                    },
-                  ].map(({ label, value, valueCls, wrapCls }) => (
-                    <div
-                      key={label}
-                      className={`px-[18px] py-3 rounded-xl flex justify-between items-center ${wrapCls}`}
-                    >
-                      <span className="text-[13px] text-[#4a3f35] font-medium">
-                        {label}
-                      </span>
-                      <span
-                        className={`text-[26px] font-normal font-['Playfair_Display',serif] ${valueCls}`}
-                      >
-                        {value}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </Card>
+                </Card>
 
-            {/* Task Trends */}
-            <Card>
-              <div className="mb-5">
-                <SectionLabel>Activity timeline</SectionLabel>
-                <h2 className="m-0 text-[22px] font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                  Task Trends
-                </h2>
-              </div>
-              <div className="relative h-[280px]">
-                <canvas ref={chartRefs.taskTrend} />
-              </div>
-            </Card>
+                {/* Line Chart */}
+                <Card>
+                  <CardHeader
+                    title="Task Trend"
+                    subtitle="Completion over time"
+                  />
+                  <div className="p-6" style={{ height: 280 }}>
+                    <canvas ref={chartRefs.taskTrend} />
+                  </div>
+                </Card>
 
-            {/* Department */}
-            <Card>
-              <div className="mb-5">
-                <SectionLabel>By team</SectionLabel>
-                <h2 className="m-0 text-[22px] font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                  Department Overview
-                </h2>
+                {/* Bar Chart */}
+                <Card className="lg:col-span-2">
+                  <CardHeader
+                    title="Department Statistics"
+                    subtitle="Tasks per department"
+                  />
+                  <div className="p-6" style={{ height: 260 }}>
+                    <canvas ref={chartRefs.departmentStats} />
+                  </div>
+                </Card>
               </div>
-              <div className="relative h-[240px]">
-                <canvas ref={chartRefs.departmentStats} />
-              </div>
-            </Card>
+            )}
 
-            {/* HR */}
+            {/* HR Tools */}
             {isHR && (
-              <Card className="!border-[#b8c6ee] !bg-[#eaeefc]">
-                <div className="mb-4">
-                  <SectionLabel>HR tools</SectionLabel>
-                  <h2 className="m-0 text-[22px] font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                    HR Dashboard
-                  </h2>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
+              <Card>
+                <CardHeader
+                  title="HR Dashboard"
+                  subtitle="Quick access to HR tools"
+                />
+                <div className="p-5 grid grid-cols-2 gap-3">
                   {[
                     {
                       label: "Attendance Records",
                       href: "/attendance",
-                      borderCls: "border-[#b8c6ee]",
-                      iconColor: "text-[#3d5a9e]",
+                      icon: "📋",
                     },
                     {
                       label: "Performance Data",
                       href: "/performance",
-                      borderCls: "border-[#b5d5c2]",
-                      iconColor: "text-[#4a7c5f]",
+                      icon: "📊",
                     },
-                  ].map(({ label, href, borderCls, iconColor }) => (
+                  ].map(({ label, href, icon }) => (
                     <Link key={href} href={href} className="no-underline">
-                      <div
-                        className={`px-5 py-4 rounded-xl bg-white border flex justify-between items-center cursor-pointer transition-shadow duration-150 hover:shadow-[0_2px_12px_rgba(0,0,0,0.1)] ${borderCls}`}
-                      >
-                        <span className="text-sm font-semibold text-[#1a1410]">
-                          {label}
-                        </span>
-                        <ArrowUpRight size={16} className={iconColor} />
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="flex flex-col gap-5">
-            {/* Today's Snapshot */}
-            <div className="relative overflow-hidden bg-[#0F6E56] rounded-[18px] px-[26px] py-[22px] shadow-[0_4px_20px_rgba(15,110,86,0.2)]">
-              <div className="absolute -top-[30px] -right-[30px] w-[100px] h-[100px] rounded-full bg-white/[0.12] pointer-events-none" />
-              <div className="absolute -bottom-5 -left-5 w-20 h-20 rounded-full bg-white/[0.07] pointer-events-none" />
-              <div className="mb-4">
-                <p className="text-[10px] font-bold tracking-[0.14em] uppercase text-white/65 m-0 mb-1">
-                  Live
-                </p>
-                <h2 className="m-0 text-lg font-semibold text-white font-['Playfair_Display',serif]">
-                  Today's Snapshot
-                </h2>
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                {[
-                  {
-                    label: "Present Today",
-                    value: analytics?.users?.active || 0,
-                  },
-                  {
-                    label: "Overdue Tasks",
-                    value: analytics?.tasks?.overdue || 0,
-                  },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="px-4 py-3 rounded-xl bg-white/[0.15] flex justify-between items-center"
-                  >
-                    <span className="text-[13px] text-white/80 font-medium">
-                      {label}
-                    </span>
-                    <span className="text-[28px] font-normal text-white font-['Playfair_Display',serif]">
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Profile */}
-            <Card>
-              <SectionLabel>Account</SectionLabel>
-              <h2 className="m-0 mb-4 text-lg font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                Profile
-              </h2>
-              <div className="flex items-center gap-[14px] mb-4 pb-4 border-b border-[#e4ddd4]">
-                <div className="w-[46px] h-[46px] rounded-full bg-[#E8F5ED] border-2 border-[#C3E6D6] flex items-center justify-center text-[15px] font-bold text-[#0F6E56] flex-shrink-0">
-                  {user?.name
-                    ?.split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .toUpperCase()
-                    .slice(0, 2)}
-                </div>
-                <div>
-                  <p className="m-0 text-sm font-semibold text-[#1a1410]">
-                    {user?.name}
-                  </p>
-                  <p className="m-0 text-xs text-[#9e8e80]">{user?.email}</p>
-                </div>
-              </div>
-              <div className="flex flex-col gap-[10px]">
-                {[
-                  { label: "Department", value: user?.department || "N/A" },
-                  { label: "Role", value: user?.role },
-                ].map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="flex justify-between items-center"
-                  >
-                    <span className="text-xs text-[#c4b8ad] font-bold uppercase tracking-[0.06em]">
-                      {label}
-                    </span>
-                    <span className="text-[13px] text-[#1a1410] font-semibold">
-                      {value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <Link href="/profile" className="no-underline block mt-[18px]">
-                <button className="w-full py-[10px] rounded-[10px] bg-transparent border border-[#d4ccc2] text-[#9e8e80] text-[13px] font-semibold cursor-pointer font-['Lato',sans-serif] transition-all duration-150 hover:border-[#0F6E56] hover:text-[#0F6E56] hover:bg-[#E8F5ED]">
-                  View Full Profile
-                </button>
-              </Link>
-            </Card>
-
-            {/* Quick Actions */}
-            {isAdminOrManager && (
-              <Card>
-                <SectionLabel>Shortcuts</SectionLabel>
-                <h2 className="m-0 mb-4 text-lg font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                  Quick Actions
-                </h2>
-                <div className="flex flex-col gap-2">
-                  {[
-                    {
-                      label: "Manage Tasks",
-                      href: "/tasks",
-                      icon: <CheckSquare size={15} />,
-                      wrapCls: "bg-[#eaeefc] border border-[#b8c6ee]",
-                      iconCls: "text-[#3d5a9e]",
-                    },
-                    ...(user?.role === "Admin"
-                      ? [
-                          {
-                            label: "Manage Users",
-                            href: "/users",
-                            icon: <Users size={15} />,
-                            wrapCls: "bg-[#e6f2ec] border border-[#b5d5c2]",
-                            iconCls: "text-[#4a7c5f]",
-                          },
-                        ]
-                      : []),
-                  ].map(({ label, href, icon, wrapCls, iconCls }) => (
-                    <Link key={href} href={href} className="no-underline">
-                      <div
-                        className={`px-4 py-3 rounded-[10px] flex items-center gap-[10px] cursor-pointer transition-shadow duration-150 hover:shadow-[0_2px_10px_rgba(0,0,0,0.08)] ${wrapCls}`}
-                      >
-                        <span className={iconCls}>{icon}</span>
-                        <span className="text-[13px] text-[#1a1410] font-semibold">
-                          {label}
-                        </span>
+                      <div className="px-4 py-4 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] flex items-center justify-between hover:border-[#C4B5FD] hover:bg-[#EDE9FE] transition-all group">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xl">{icon}</span>
+                          <span className="text-sm font-semibold text-[#1E1B4B]">
+                            {label}
+                          </span>
+                        </div>
                         <ArrowUpRight
-                          size={14}
-                          className="text-[#c4b8ad] ml-auto"
+                          size={16}
+                          className="text-[#C4B5FD] group-hover:text-[#7C3AED] transition-colors"
                         />
                       </div>
                     </Link>
@@ -867,34 +1017,202 @@ export default function DashboardPage() {
                 </div>
               </Card>
             )}
+          </div>
+
+          {/* ── Sidebar ── */}
+          <div className="flex flex-col gap-5">
+            {/* Today's Snapshot */}
+            <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] shadow-xl shadow-purple-200">
+              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none" />
+              <div className="relative">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-white/60 mb-1">
+                  Live
+                </p>
+                <h2
+                  className="text-base font-bold text-white mb-4"
+                  style={{ fontFamily: "'DM Serif Display', serif" }}
+                >
+                  Today's Snapshot
+                </h2>
+                <div className="flex flex-col gap-3">
+                  {[
+                    {
+                      label: "Present Today",
+                      value: analytics?.users?.active || 0,
+                      icon: "👥",
+                    },
+                    {
+                      label: "Overdue Tasks",
+                      value: analytics?.tasks?.overdue || 0,
+                      icon: "⚠️",
+                    },
+                  ].map(({ label, value, icon }) => (
+                    <div
+                      key={label}
+                      className="px-4 py-3 rounded-xl bg-white/15 flex items-center justify-between"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{icon}</span>
+                        <span className="text-xs font-semibold text-white/80">
+                          {label}
+                        </span>
+                      </div>
+                      <span
+                        className="text-2xl font-bold text-white"
+                        style={{ fontFamily: "'DM Serif Display', serif" }}
+                      >
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Completion ring */}
+                <div className="mt-4 pt-4 border-t border-white/20">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-white/70">
+                      Completion Rate
+                    </span>
+                    <span className="text-sm font-bold text-white">
+                      {completionRate}%
+                    </span>
+                  </div>
+                  <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white rounded-full transition-all duration-700"
+                      style={{ width: `${completionRate}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Profile Card */}
+            <Card>
+              <div className="px-5 py-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-3">
+                  Account
+                </p>
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#F3F4F6]">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {user?.name
+                      ?.split(" ")
+                      .map((n) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[#1E1B4B]">
+                      {user?.name}
+                    </p>
+                    <p className="text-xs text-[#9CA3AF]">{user?.email}</p>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2.5">
+                  {[
+                    { label: "Department", value: user?.department || "N/A" },
+                    { label: "Role", value: user?.role },
+                  ].map(({ label, value }) => (
+                    <div
+                      key={label}
+                      className="flex justify-between items-center"
+                    >
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#C4B5FD]">
+                        {label}
+                      </span>
+                      <span className="text-xs font-semibold text-[#1E1B4B]">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/profile" className="no-underline block mt-4">
+                  <button className="w-full py-2.5 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] text-[#7C3AED] text-xs font-bold hover:bg-[#EDE9FE] hover:border-[#C4B5FD] transition-all duration-150">
+                    View Full Profile
+                  </button>
+                </Link>
+              </div>
+            </Card>
+
+            {/* Quick Actions */}
+            {isAdminOrManager && (
+              <Card>
+                <div className="px-5 py-4">
+                  <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-3">
+                    Shortcuts
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {[
+                      {
+                        label: "Manage Tasks",
+                        href: "/tasks",
+                        icon: <CheckSquare size={15} />,
+                        color: "text-[#7C3AED] bg-[#EDE9FE]",
+                      },
+                      ...(user?.role === "Admin"
+                        ? [
+                            {
+                              label: "Manage Users",
+                              href: "/users",
+                              icon: <Users size={15} />,
+                              color: "text-[#2563EB] bg-[#DBEAFE]",
+                            },
+                          ]
+                        : []),
+                    ].map(({ label, href, icon, color }) => (
+                      <Link key={href} href={href} className="no-underline">
+                        <div className="px-4 py-3 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] flex items-center gap-3 hover:border-[#C4B5FD] hover:bg-[#EDE9FE] transition-all group cursor-pointer">
+                          <span className={`p-1.5 rounded-lg ${color}`}>
+                            {icon}
+                          </span>
+                          <span className="text-sm font-semibold text-[#1E1B4B] flex-1">
+                            {label}
+                          </span>
+                          <ArrowUpRight
+                            size={14}
+                            className="text-[#C4B5FD] group-hover:text-[#7C3AED] transition-colors"
+                          />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            )}
 
             {/* Recent Activity */}
             <Card>
-              <SectionLabel>Updates</SectionLabel>
-              <h2 className="m-0 mb-4 text-lg font-normal text-[#1a1410] font-['Playfair_Display',serif]">
-                Recent Activity
-              </h2>
-              <div className="flex flex-col gap-2 max-h-[280px] overflow-y-auto">
-                {recentActivities.slice(0, 5).map((activity, index) => (
-                  <div
-                    key={index}
-                    className="px-[14px] py-[11px] rounded-[10px] bg-[#f4f1ec] border border-[#e4ddd4] border-l-[3px] border-l-[#3d5a9e]"
-                  >
-                    <p className="m-0 mb-[3px] text-[13px] text-[#1a1410] font-medium">
-                      {activity.description}
+              <div className="px-5 py-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-1">
+                  Updates
+                </p>
+                <h3 className="text-sm font-bold text-[#1E1B4B] mb-3">
+                  Recent Activity
+                </h3>
+                <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
+                  {recentActivities.slice(0, 5).map((activity, i) => (
+                    <div
+                      key={i}
+                      className="px-3 py-2.5 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] border-l-2 border-l-[#7C3AED]"
+                    >
+                      <p className="text-xs font-semibold text-[#1E1B4B] mb-0.5 leading-snug">
+                        {activity.description}
+                      </p>
+                      <p className="text-[10px] text-[#C4B5FD]">
+                        {activity.createdAt
+                          ? new Date(activity.createdAt).toLocaleString()
+                          : "Just now"}
+                      </p>
+                    </div>
+                  ))}
+                  {recentActivities.length === 0 && (
+                    <p className="text-xs text-[#C4B5FD] text-center py-6">
+                      No recent activity
                     </p>
-                    <p className="m-0 text-[11px] text-[#c4b8ad]">
-                      {activity.createdAt
-                        ? new Date(activity.createdAt).toLocaleString()
-                        : "Just now"}
-                    </p>
-                  </div>
-                ))}
-                {recentActivities.length === 0 && (
-                  <p className="text-[13px] text-[#c4b8ad] text-center py-5">
-                    No recent activity
-                  </p>
-                )}
+                  )}
+                </div>
               </div>
             </Card>
           </div>

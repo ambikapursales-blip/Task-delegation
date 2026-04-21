@@ -3,7 +3,10 @@ const router = express.Router();
 const Task = require("../models/Task");
 const Activity = require("../models/Activity");
 const { protect, authorize } = require("../middleware/auth");
-const { generateRecurringTasks } = require("../utils/cronJobs");
+const {
+  generateRecurringTasks,
+  sendPendingTaskReminders,
+} = require("../utils/cronJobs");
 const {
   getTasks,
   getTask,
@@ -46,6 +49,29 @@ router.post(
   protect,
   authorize("Manager", "Admin", "HR"),
   bulkAssignTasks,
+);
+
+// @desc    Manually trigger pending task reminder emails (for testing)
+// @route   POST /api/tasks/test/reminders
+router.post(
+  "/test/reminders",
+  protect,
+  authorize("Admin", "Manager"),
+  async (req, res) => {
+    try {
+      await sendPendingTaskReminders();
+      res.json({
+        success: true,
+        message: "Pending task reminder emails sent successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error sending reminder emails",
+        error: error.message,
+      });
+    }
+  },
 );
 
 // @desc    Get single task
@@ -99,6 +125,29 @@ router.post(
       res.status(500).json({
         success: false,
         message: "Error generating recurring tasks",
+        error: error.message,
+      });
+    }
+  },
+);
+
+// @desc    Manually trigger pending task reminder emails (for testing)
+// @route   POST /api/tasks/test/reminders
+router.post(
+  "/test/reminders",
+  protect,
+  authorize("Admin", "Manager"),
+  async (req, res) => {
+    try {
+      await sendPendingTaskReminders();
+      res.json({
+        success: true,
+        message: "Pending task reminder emails sent successfully",
+      });
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        message: "Error sending reminder emails",
         error: error.message,
       });
     }

@@ -100,120 +100,73 @@ export default function Sidebar({ isOpen, setIsOpen }) {
     <>
       {/* Sidebar */}
       <aside
-        className={`fixed md:relative z-30 h-full w-64 border-r border-[#0F6E56] transition-transform duration-200 transform ${
+        className={`fixed md:relative z-30 h-full w-64 border-r border-indigo-200 transition-transform duration-200 transform bg-gradient-to-b from-indigo-50 to-purple-50 ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
-        style={{ background: "#0F4A32" }}
       >
         <div className="flex flex-col h-full p-4 pt-16 md:pt-4">
           {/* Logo */}
-          <div className="mb-8 flex items-center gap-2">
-            <div
-              className="h-9 w-9 rounded-lg flex items-center justify-center"
-              style={{ background: "#1D9E75" }}
-            >
-              <span className="font-bold" style={{ color: "#E1F5EE" }}>
-                D
-              </span>
+          <div className="mb-8 flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600 shadow-lg">
+              <span className="font-bold text-white text-lg">D</span>
             </div>
             <div>
-              <h1
-                className="text-base font-medium"
-                style={{ color: "#E1F5EE" }}
-              >
-                Delegation
-              </h1>
-              <p className="text-xs" style={{ color: "#5DCAA5" }}>
-                {user?.role || "User"}
-              </p>
+              <h1 className="text-lg font-bold text-slate-900">Delegation</h1>
+              <p className="text-xs text-slate-600">{user?.role || "User"}</p>
             </div>
           </div>
 
           {/* Section label */}
-          <p
-            className="text-[10px] uppercase tracking-widest mb-2 ml-2 font-medium"
-            style={{ color: "#1D9E75" }}
-          >
-            Main Menu
+          <p className="text-[10px] uppercase tracking-widest mb-3 ml-2 font-bold text-indigo-600">
+            Navigation
           </p>
 
           {/* Nav */}
-          <nav className="flex-1 space-y-0.5">
+          <nav className="flex-1 space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
               return (
                 <Link key={item.href} href={item.href}>
-                  <Button
-                    variant="ghost"
+                  <button
                     onClick={() => setIsOpen(false)}
-                    className="w-full justify-start rounded-lg"
-                    style={
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
                       isActive
-                        ? { background: "#1D9E75", color: "#E1F5EE" }
-                        : { color: "#9FE1CB" }
-                    }
-                    onMouseEnter={(e) =>
-                      !isActive &&
-                      (e.currentTarget.style.background = "#0F6E56")
-                    }
-                    onMouseLeave={(e) =>
-                      !isActive &&
-                      (e.currentTarget.style.background = "transparent")
-                    }
+                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
+                        : "text-slate-700 hover:bg-indigo-100"
+                    }`}
                   >
-                    <Icon className="mr-2 h-4 w-4" />
+                    <Icon className="h-5 w-5 flex-shrink-0" />
                     {item.title}
-                  </Button>
+                  </button>
                 </Link>
               );
             })}
           </nav>
 
           {/* AI Assistant */}
-          <div
-            style={{
-              borderTop: "0.5px solid #0F6E56",
-              paddingTop: "12px",
-              marginTop: "12px",
-            }}
-          >
+          <div className="border-t border-indigo-200 pt-4 mt-4">
             <a
               href="https://deepsikha-ai.vercel.app/ai-assistant"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <Button
-                variant="ghost"
-                className="w-full justify-start rounded-lg"
-                style={{
-                  color: "#E1F5EE",
-                  background: "rgba(29, 158, 117, 0.2)",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "#1D9E75")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "rgba(29, 158, 117, 0.2)")
-                }
-              >
-                <Sparkles className="mr-2 h-4 w-4" />
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 hover:from-purple-200 hover:to-indigo-200 transition-all duration-200 font-semibold">
+                <Sparkles className="h-5 w-5" />
                 AI Assistant
-              </Button>
+              </button>
             </a>
           </div>
 
           {/* Logout */}
-          <div style={{ borderTop: "0.5px solid #0F6E56", paddingTop: "12px" }}>
-            <Button
+          <div className="border-t border-indigo-200 pt-4">
+            <button
               onClick={handleLogout}
-              variant="ghost"
-              className="w-full justify-start rounded-lg"
-              style={{ color: "#F09575", background: "rgba(216,90,48,0.15)" }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-all duration-200 font-semibold"
             >
-              <LogOut className="mr-2 h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Logout
-            </Button>
+            </button>
           </div>
         </div>
       </aside>

@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { eventsAPI, usersAPI, api } from "@/lib/api";
 import { Loading } from "@/components/loading";
+import { Button } from "@/components/ui/button";
+import Toast from "@/components/Toast";
 import {
   Plus,
   Calendar,
-  MapPin,
   Link as LinkIcon,
   Users,
   Clock,
@@ -15,6 +16,7 @@ import {
   Trash2,
   X,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
   Video,
@@ -148,6 +150,16 @@ export default function EventsPage() {
     }
   };
 
+  const handleMarkComplete = async (eventId) => {
+    try {
+      await eventsAPI.update(eventId, { status: "Completed" });
+      setAlert({ type: "success", msg: "Event marked as completed!" });
+      fetchData();
+    } catch {
+      setAlert({ type: "error", msg: "Failed to mark event as completed" });
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       title: "",
@@ -241,20 +253,11 @@ export default function EventsPage() {
 
       {/* Alert */}
       {alert && (
-        <div
-          className={`mx-6 mt-4 flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm font-medium border transition-all ${
-            alert.type === "error"
-              ? "bg-red-50 border-red-200 text-red-700"
-              : "bg-emerald-50 border-emerald-200 text-emerald-700"
-          }`}
-        >
-          {alert.type === "error" ? (
-            <AlertCircle className="w-4 h-4 shrink-0" />
-          ) : (
-            <BadgeCheck className="w-4 h-4 shrink-0" />
-          )}
-          {alert.msg}
-        </div>
+        <Toast
+          type={alert.type}
+          message={alert.msg}
+          onClose={() => setAlert(null)}
+        />
       )}
 
       <div className="w-full px-6 py-5">
@@ -464,128 +467,167 @@ export default function EventsPage() {
         )}
 
         {/* Events Table */}
-        <div className="w-full bg-white border border-stone-200 rounded-xl shadow-sm overflow-hidden">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-4 sm:px-5 py-3 border-b border-stone-100 bg-stone-50 gap-2">
-            <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide">
-              {sorted.length} Event{sorted.length !== 1 ? "s" : ""}
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-blue-50">
+            <h2 className="text-lg font-bold text-slate-800">
+              Events Overview
+            </h2>
+            <p className="text-sm text-slate-500 mt-1">
+              Showing {sorted.length} events
             </p>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-              {["Upcoming", "Ongoing", "Completed", "Cancelled"].map((s) => (
-                <span
-                  key={s}
-                  className="flex items-center gap-1.5 text-xs text-stone-400"
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[s]}`}
-                  />
-                  {sorted.filter((e) => e.status === s).length} {s}
-                </span>
-              ))}
-            </div>
           </div>
 
           {sorted.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-2">
-              <Calendar className="w-10 h-10 text-stone-200" />
-              <p className="text-sm font-medium text-stone-400">
-                No events yet
-              </p>
-              <p className="text-xs text-stone-300">
-                Click "New Event" to create your first event
-              </p>
+            <div className="flex flex-col items-center justify-center py-12 gap-3">
+              <img
+                src="/nodata.gif"
+                alt="No data"
+                className="w-32 h-32 object-contain"
+              />
+              <p className="text-slate-500 font-medium">No events found</p>
             </div>
           ) : (
-            <div className="w-full overflow-x-auto p-4">
-              <table className="w-full text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full">
                 <thead>
-                  <tr className="border-b border-stone-100 bg-stone-50/50">
-                    {[
-                      { field: "title", label: "Event", icon: Calendar },
-                      { field: "type", label: "Type", icon: null },
-                      { field: "startDate", label: "Start Date", icon: Clock },
-                      { field: "status", label: "Status", icon: BadgeCheck },
-                      { field: "assignedTo", label: "Attendees", icon: Users },
-                      { field: null, label: "", icon: null },
-                    ].map(({ field, label, icon: Icon }) => (
-                      <th
-                        key={label}
-                        onClick={() => field && toggleSort(field)}
-                        className={`px-4 py-3 text-left text-xs font-semibold text-stone-400 uppercase tracking-wide whitespace-nowrap ${
-                          field
-                            ? "cursor-pointer select-none hover:text-stone-600"
-                            : ""
-                        }`}
-                      >
-                        <span className="flex items-center gap-1.5">
-                          {Icon && <Icon className="w-3.5 h-3.5" />}
-                          {label}
-                          {field && <SortIcon field={field} />}
-                        </span>
-                      </th>
-                    ))}
+                  <tr className="border-b border-slate-200">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Event
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Start Date
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Priority
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Attendees
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
-                  {sorted.map((event) => (
-                    <>
+                  {sorted.map((event) => {
+                    const getPriorityColor = (priority) => {
+                      const colors = {
+                        High: "bg-red-100 text-red-800 border-red-300",
+                        Medium:
+                          "bg-yellow-100 text-yellow-800 border-yellow-300",
+                        Low: "bg-green-100 text-green-800 border-green-300",
+                      };
+                      return (
+                        colors[priority] ||
+                        "bg-gray-100 text-gray-800 border-gray-300"
+                      );
+                    };
+
+                    const rowBgColor =
+                      event.status === "Completed"
+                        ? "bg-green-50"
+                        : event.status === "Ongoing"
+                          ? "bg-blue-50"
+                          : event.status === "Cancelled"
+                            ? "bg-red-50"
+                            : event.priority === "High"
+                              ? "bg-orange-50"
+                              : event.priority === "Medium"
+                                ? "bg-yellow-100"
+                                : "bg-white";
+
+                    return (
                       <tr
                         key={event._id}
-                        className={`border-b border-stone-50 transition-colors ${
-                          expandedRow === event._id
-                            ? "bg-stone-50"
-                            : "hover:bg-stone-50/70"
-                        }`}
+                        className={`${rowBgColor} border-b border-slate-100 hover:opacity-80 transition-opacity`}
                       >
-                        <td className="px-4 py-3.5 min-w-[150px]">
+                        <td className="px-4 py-3 max-w-xs">
                           <div>
-                            <p className="font-semibold text-stone-800">
+                            <p className="font-semibold text-slate-800 text-sm truncate">
                               {event.title}
                             </p>
-                            <p className="text-xs text-stone-400 mt-0.5 line-clamp-1">
-                              {event.description}
-                            </p>
+                            {event.description && (
+                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1 truncate">
+                                {event.description}
+                              </p>
+                            )}
                           </div>
                         </td>
-                        <td className="px-4 py-3.5 min-w-[80px]">
-                          <span className="text-xs font-medium bg-stone-100 text-stone-600 px-2 py-1 rounded-md">
+                        <td className="px-4 py-3">
+                          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
                             {event.type}
                           </span>
                         </td>
-                        <td className="px-4 py-3.5 whitespace-nowrap text-xs text-stone-500 min-w-[140px]">
-                          {fmtDateTime(event.startDate)}
+                        <td className="px-4 py-3">
+                          <span className="text-xs text-slate-600">
+                            {fmtDateTime(event.startDate)}
+                          </span>
                         </td>
-                        <td className="px-4 py-3.5 min-w-[100px]">
+                        <td className="px-4 py-3">
                           <span
-                            className={`inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_STYLES[event.status]}`}
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${STATUS_STYLES[event.status]}`}
                           >
-                            <span
-                              className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[event.status]}`}
-                            />
                             {event.status}
                           </span>
                         </td>
-                        <td className="px-4 py-3.5 min-w-[80px]">
-                          <span className="text-xs text-stone-500">
-                            {event.assignedTo?.length || 0} attendee
-                            {event.assignedTo?.length !== 1 ? "s" : ""}
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(event.priority)}`}
+                          >
+                            {event.priority}
                           </span>
                         </td>
-                        <td className="px-4 py-3.5">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            {event.assignedTo && event.assignedTo.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {event.assignedTo
+                                  .slice(0, 2)
+                                  .map((user, idx) => (
+                                    <span
+                                      key={idx}
+                                      className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
+                                      title={
+                                        typeof user === "object"
+                                          ? user.name
+                                          : user
+                                      }
+                                    >
+                                      {typeof user === "object"
+                                        ? user.name
+                                        : user}
+                                    </span>
+                                  ))}
+                                {event.assignedTo.length > 2 && (
+                                  <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                                    +{event.assignedTo.length - 2}
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-slate-400">
+                                No attendees
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-1">
-                            <button
-                              onClick={() =>
-                                setExpandedRow(
-                                  expandedRow === event._id ? null : event._id,
-                                )
-                              }
-                              className="flex items-center gap-1 text-xs font-medium text-stone-400 hover:text-[#0F6E56] px-2.5 py-1.5 rounded-md hover:bg-emerald-50 transition-colors"
-                            >
-                              {expandedRow === event._id ? (
-                                <ChevronUp className="w-3.5 h-3.5" />
-                              ) : (
-                                <ChevronDown className="w-3.5 h-3.5" />
-                              )}
-                            </button>
+                            {event.status !== "Completed" && (
+                              <button
+                                onClick={() => handleMarkComplete(event._id)}
+                                className="p-1.5 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                title="Mark as completed"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                              </button>
+                            )}
                             {canManage && (
                               <>
                                 <button
@@ -609,137 +651,8 @@ export default function EventsPage() {
                           </div>
                         </td>
                       </tr>
-
-                      {/* Expanded Row */}
-                      {expandedRow === event._id && (
-                        <tr
-                          key={`exp-${event._id}`}
-                          className="bg-stone-50/80 border-b border-stone-100"
-                        >
-                          <td colSpan={6} className="px-6 py-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-4">
-                              <div>
-                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
-                                  Description
-                                </p>
-                                <p className="text-sm text-stone-600 leading-relaxed">
-                                  {event.description || "No description"}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
-                                  Time Details
-                                </p>
-                                <div className="space-y-1 text-sm text-stone-600">
-                                  <p>Start: {fmtDateTime(event.startDate)}</p>
-                                  <p>End: {fmtDateTime(event.endDate)}</p>
-                                </div>
-                              </div>
-                              {event.location && (
-                                <div>
-                                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
-                                    Location
-                                  </p>
-                                  <div className="flex items-center gap-2 text-sm text-stone-600">
-                                    <MapPin className="w-4 h-4" />
-                                    {event.location}
-                                  </div>
-                                </div>
-                              )}
-                              {event.isVirtual && event.meetingLink && (
-                                <div>
-                                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1.5">
-                                    Meeting Link
-                                  </p>
-                                  <a
-                                    href={event.meetingLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-sm text-blue-600 hover:underline"
-                                  >
-                                    <Video className="w-4 h-4" />
-                                    Join Meeting
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Assigned Users */}
-                            {event.assignedTo?.length > 0 && (
-                              <div className="pt-4 border-t border-stone-200">
-                                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">
-                                  Attendees
-                                </p>
-                                <div className="space-y-2">
-                                  {event.assignedTo.map((assignment) => (
-                                    <div
-                                      key={assignment.employee?._id}
-                                      className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-stone-200"
-                                    >
-                                      <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center shrink-0">
-                                          <span className="text-xs font-bold text-violet-600">
-                                            {assignment.employee?.name?.charAt(
-                                              0,
-                                            )}
-                                          </span>
-                                        </div>
-                                        <div>
-                                          <p className="text-sm font-medium text-stone-800">
-                                            {assignment.employee?.name}
-                                          </p>
-                                          <p className="text-xs text-stone-400">
-                                            {assignment.employee?.email}
-                                          </p>
-                                        </div>
-                                      </div>
-                                      <span
-                                        className={`text-xs font-semibold px-2.5 py-1 rounded-full ${RSVP_STATUS[assignment.status]}`}
-                                      >
-                                        {assignment.status}
-                                      </span>
-                                    </div>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-
-                            {/* RSVP Actions for current user */}
-                            {!canManage &&
-                              event.assignedTo?.some(
-                                (a) =>
-                                  a.employee?._id === user._id &&
-                                  a.status === "Pending",
-                              ) && (
-                                <div className="pt-4 border-t border-stone-200">
-                                  <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-3">
-                                    Your Response
-                                  </p>
-                                  <div className="flex gap-2">
-                                    <button
-                                      onClick={() =>
-                                        handleRSVP(event._id, "Accepted")
-                                      }
-                                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-colors"
-                                    >
-                                      <Check className="w-3.5 h-3.5" /> Accept
-                                    </button>
-                                    <button
-                                      onClick={() =>
-                                        handleRSVP(event._id, "Declined")
-                                      }
-                                      className="flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 transition-colors"
-                                    >
-                                      <X className="w-3.5 h-3.5" /> Decline
-                                    </button>
-                                  </div>
-                                </div>
-                              )}
-                          </td>
-                        </tr>
-                      )}
-                    </>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
