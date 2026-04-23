@@ -77,11 +77,15 @@ export default function PerformancePage() {
         const response = await performanceAPI.getLeaderboard({ period });
         setLeaderboard(response.data?.leaderboard || []);
       } else if (activeTab === "compare") {
-        const response = await performanceAPI.compare({
-          period,
-          userIds: selectedUsers.join(","),
-        });
-        setComparisons(response.data?.comparisons || []);
+        if (selectedUsers.length > 0) {
+          const response = await performanceAPI.compare({
+            period,
+            userIds: selectedUsers.join(","),
+          });
+          setComparisons(response.data?.comparisons || []);
+        } else {
+          setComparisons([]);
+        }
       } else if (activeTab === "trends" && trendUserId) {
         const response = await performanceAPI.getTrends(trendUserId, {
           period,

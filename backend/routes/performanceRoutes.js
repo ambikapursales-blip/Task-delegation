@@ -321,13 +321,13 @@ router.get(
       let intervalDays;
 
       if (period === "week") {
-        startDate = new Date(now.setDate(now.getDate() - 7));
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         intervalDays = 1;
       } else if (period === "month") {
-        startDate = new Date(now.setMonth(now.getMonth() - 1));
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         intervalDays = 7;
       } else {
-        startDate = new Date(now.setFullYear(now.getFullYear() - 1));
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
         intervalDays = 30;
       }
 
@@ -340,9 +340,9 @@ router.get(
         nextDate.setDate(nextDate.getDate() + intervalDays);
 
         const tasksCompleted = await Task.countDocuments({
-          assignedTo: userId,
+          assignedTo: { $in: [userId] },
           status: "Completed",
-          completedAt: { $gte: currentDate, $lt: nextDate },
+          createdAt: { $gte: currentDate, $lt: nextDate },
         });
 
         const dwrSubmitted = await DWR.countDocuments({

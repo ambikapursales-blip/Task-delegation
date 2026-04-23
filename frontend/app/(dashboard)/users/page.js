@@ -1,30 +1,129 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { usersAPI } from "@/lib/api";
 import { Loading } from "@/components/loading";
-import { Button } from "@/components/ui/button";
-import { Users, Mail, Building2, Edit, Trash2 } from "lucide-react";
+import { Mail, Building2, Edit, Trash2, Phone } from "lucide-react";
 
-const roleColors = {
-  Admin: "bg-red-100 text-red-800",
-  HR: "bg-purple-100 text-purple-800",
-  Manager: "bg-blue-100 text-blue-800",
-  "Sales Executive": "bg-green-100 text-green-800",
-  Coordinator: "bg-yellow-100 text-yellow-800",
+const ROLE_STYLES = {
+  Admin: {
+    badge: "bg-red-50 text-red-700 ring-1 ring-red-200",
+    avatar: "bg-red-50 text-red-700",
+    bar: "bg-red-400",
+  },
+  HR: {
+    badge: "bg-violet-50 text-violet-700 ring-1 ring-violet-200",
+    avatar: "bg-violet-50 text-violet-700",
+    bar: "bg-violet-400",
+  },
+  Manager: {
+    badge: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
+    avatar: "bg-blue-50 text-blue-700",
+    bar: "bg-blue-400",
+  },
+  "Sales Executive": {
+    badge: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+    avatar: "bg-emerald-50 text-emerald-700",
+    bar: "bg-emerald-400",
+  },
+  Coordinator: {
+    badge: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
+    avatar: "bg-amber-50 text-amber-700",
+    bar: "bg-amber-400",
+  },
 };
+
+const DEFAULT_STYLE = {
+  badge: "bg-gray-50 text-gray-700 ring-1 ring-gray-200",
+  avatar: "bg-gray-100 text-gray-600",
+  bar: "bg-gray-400",
+};
+
+const FILTERS = [
+  "All",
+  "Admin",
+  "HR",
+  "Manager",
+  "Sales Executive",
+  "Coordinator",
+];
+
+function UserCard({ user }) {
+  const style = ROLE_STYLES[user.role] || DEFAULT_STYLE;
+  const initials = user.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  return (
+    <div className="group relative bg-white rounded-2xl border border-gray-100 hover:border-gray-200 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 overflow-hidden flex flex-col">
+      {/* Top accent bar */}
+      <div className={`h-1 w-full ${style.bar}`} />
+
+      <div className="p-5 flex flex-col flex-1">
+        {/* Header */}
+        <div className="flex items-start justify-between mb-4">
+          <div
+            className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-semibold shrink-0 ${style.avatar}`}
+          >
+            {initials}
+          </div>
+          <span
+            className={`text-[11px] font-medium px-2.5 py-1 rounded-full ${style.badge}`}
+          >
+            {user.role}
+          </span>
+        </div>
+
+        {/* Name */}
+        <h3 className="text-sm font-semibold text-gray-900 mb-3 leading-snug">
+          {user.name}
+        </h3>
+
+        {/* Meta */}
+        <div className="space-y-1.5 text-xs text-gray-500 flex-1">
+          <div className="flex items-center gap-2 min-w-0">
+            <Mail className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+            <span className="truncate">{user.email}</span>
+          </div>
+
+          {user.department && (
+            <div className="flex items-center gap-2">
+              <Building2 className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+              <span>{user.department}</span>
+            </div>
+          )}
+
+          {user.phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="w-3.5 h-3.5 shrink-0 text-gray-400" />
+              <span>{user.phone}</span>
+            </div>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
+          <button className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 rounded-lg px-3 py-2 transition-colors">
+            <Edit className="w-3.5 h-3.5" />
+            Edit
+          </button>
+          <button className="flex-1 inline-flex items-center justify-center gap-1.5 text-xs font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-lg px-3 py-2 transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeFilter, setActiveFilter] = useState("All");
 
   useEffect(() => {
     fetchUsers();
@@ -42,86 +141,61 @@ export default function UsersPage() {
     }
   };
 
+  const filtered =
+    activeFilter === "All"
+      ? users
+      : users.filter((u) => u.role === activeFilter);
+
   if (loading) return <Loading />;
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Team Members</h1>
-          <p className="text-muted-foreground">
-            Manage your organization users
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+            Team Members
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Manage your organisation users
           </p>
         </div>
         <div className="text-right">
-          <p className="text-2xl font-bold">{users.length}</p>
-          <p className="text-sm text-muted-foreground">Total Users</p>
+          <p className="text-2xl font-bold text-gray-900">{filtered.length}</p>
+          <p className="text-xs text-gray-400 uppercase tracking-wide">
+            {activeFilter === "All" ? "Total Users" : activeFilter}
+          </p>
         </div>
       </div>
 
-      {/* Users Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {users.map((user) => (
-          <Card key={user._id} className="hover:shadow-md transition-shadow">
-            <CardContent className="pt-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#0F6E56] to-[#0a795d] flex items-center justify-center text-white font-bold">
-                  {user.name?.charAt(0).toUpperCase()}
-                </div>
-                <Badge className={roleColors[user.role] || ""}>
-                  {user.role}
-                </Badge>
-              </div>
-
-              <div className="space-y-3">
-                <h3 className="font-semibold">{user.name}</h3>
-
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    <p className="truncate">{user.email}</p>
-                  </div>
-
-                  {user.department && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Building2 className="h-4 w-4" />
-                      <p>{user.department}</p>
-                    </div>
-                  )}
-
-                  {user.phone && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <p>{user.phone}</p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-3 border-t flex gap-2">
-                  <Button size="sm" variant="outline" className="flex-1">
-                    <Edit className="h-4 w-4 mr-1" />
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="flex-1 bg-[#e02121] text-white hover:bg-[#8a2a0a]"
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Filter Pills */}
+      <div className="flex gap-2 flex-wrap">
+        {FILTERS.map((role) => (
+          <button
+            key={role}
+            onClick={() => setActiveFilter(role)}
+            className={`text-xs font-medium px-3.5 py-1.5 rounded-full border transition-all ${
+              activeFilter === role
+                ? "bg-gray-900 text-white border-gray-900"
+                : "bg-white text-gray-500 border-gray-200 hover:border-gray-300 hover:text-gray-700"
+            }`}
+          >
+            {role}
+          </button>
         ))}
       </div>
 
-      {users.length === 0 && (
-        <Card>
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            No users found
-          </CardContent>
-        </Card>
+      {/* Grid */}
+      {filtered.length > 0 ? (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {filtered.map((user) => (
+            <UserCard key={user._id} user={user} />
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-2xl border border-dashed border-gray-200 py-16 text-center">
+          <p className="text-sm text-gray-400">No users found</p>
+        </div>
       )}
     </div>
   );
