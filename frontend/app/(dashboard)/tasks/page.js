@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import TaskBoard from "@/components/TaskBoard";
 import {
@@ -35,6 +36,7 @@ import { taskAPI, usersAPI, teamAPI } from "@/lib/api";
 
 export default function TasksPage() {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("view"); // "create" or "view"
@@ -65,10 +67,33 @@ export default function TasksPage() {
   const [showCompleteInput, setShowCompleteInput] = useState(null);
   const [completionProof, setCompletionProof] = useState("");
   const [expandedTask, setExpandedTask] = useState(null);
+  const [editingTask, setEditingTask] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: "",
+    description: "",
+    priority: "Medium",
+    deadline: "",
+    assignedTo: [],
+  });
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [taskViewTab, setTaskViewTab] = useState("all"); // "all", "completed", "inprogress", "pending", "overdue"
+  // Initialize taskViewTab from URL params to avoid race condition
+  const getInitialTab = () => {
+    const statusParam = searchParams.get("status");
+    if (statusParam) {
+      const statusMap = {
+        completed: "completed",
+        pending: "pending",
+        inprogress: "inprogress",
+        overdue: "overdue",
+      };
+      if (statusMap[statusParam.toLowerCase()])
+        return statusMap[statusParam.toLowerCase()];
+    }
+    return "all";
+  };
+  const [taskViewTab, setTaskViewTab] = useState(getInitialTab); // "all", "completed", "inprogress", "pending", "overdue"
   const [dateFilter, setDateFilter] = useState("all"); // "all", "today", "thisWeek", "thisMonth", "custom"
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -82,6 +107,68 @@ export default function TasksPage() {
       fetchUsers();
     }
   }, [taskViewTab, dateFilter, startDate, endDate, userFilter]);
+
+  const fetchTasksWithTab = async (tab) => {
+    try {
+      setLoading(true);
+      const filters = {};
+
+      // Add status filter
+      if (tab !== "all") {
+        if (tab === "completed") filters.status = "Completed";
+        else if (tab === "inprogress") filters.status = "In Progress";
+        else if (tab === "pending") filters.status = "Pending";
+        else if (tab === "overdue") filters.overdue = "true";
+      }
+
+      // Add date filter
+      if (dateFilter === "today") {
+        const now = new Date();
+        const startOfDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(
+          now.getFullYear(),
+          now.getMonth(),
+          now.getDate(),
+        );
+        endOfDay.setHours(23, 59, 59, 999);
+        filters.startDate = startOfDay.toISOString();
+        filters.endDate = endOfDay.toISOString();
+      } else if (dateFilter === "thisWeek") {
+        const now = new Date();
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - now.getDay());
+        startOfWeek.setHours(0, 0, 0, 0);
+        filters.startDate = startOfWeek.toISOString();
+      } else if (dateFilter === "thisMonth") {
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        filters.startDate = startOfMonth.toISOString();
+      } else if (dateFilter === "custom" && startDate) {
+        filters.startDate = new Date(startDate).toISOString();
+        if (endDate) {
+          filters.endDate = new Date(endDate).toISOString();
+        }
+      }
+
+      // Add user filter (for admins/managers)
+      if (userFilter && canAssignTasks) {
+        filters.assignedTo = userFilter;
+      }
+
+      const response = await taskAPI.getTasks(filters);
+      setTasks(response.data?.tasks || []);
+    } catch (err) {
+      setError("Failed to load tasks");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchTasks = async () => {
     try {
@@ -267,18 +354,49 @@ export default function TasksPage() {
       setSuccess("Task marked as completed successfully");
       fetchTasks();
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update task");
+      setError("Failed to mark task as completed");
     }
   };
 
   const handleDelete = async (taskId) => {
-    if (window.confirm("Are you sure you want to delete this task?")) {
-      try {
-        await taskAPI.deleteTask(taskId);
-        fetchTasks();
-      } catch (err) {
-        setError("Failed to delete task");
-      }
+    if (!confirm("Are you sure you want to delete this task?")) return;
+    try {
+      await taskAPI.deleteTask(taskId);
+      fetchTasks();
+    } catch (err) {
+      setError("Failed to delete task");
+    }
+  };
+
+  const handleEdit = (task) => {
+    setEditingTask(task);
+    setEditFormData({
+      title: task.title,
+      description: task.description || "",
+      priority: task.priority,
+      deadline: task.deadline ? task.deadline.split("T")[0] : "",
+      assignedTo: Array.isArray(task.assignedTo)
+        ? task.assignedTo.map((u) => (typeof u === "object" ? u._id : u))
+        : [task.assignedTo],
+    });
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await taskAPI.updateTask(editingTask._id, editFormData);
+      setSuccess("Task updated successfully");
+      setEditingTask(null);
+      setEditFormData({
+        title: "",
+        description: "",
+        priority: "Medium",
+        deadline: "",
+        assignedTo: [],
+      });
+      fetchTasks();
+    } catch (err) {
+      setError("Failed to update task");
     }
   };
 
@@ -775,6 +893,174 @@ export default function TasksPage() {
         </div>
       )}
 
+      {/* Edit Task Modal */}
+      {editingTask && (
+        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+          <div className="min-h-screen flex items-center justify-center p-4">
+            <Card className="w-full max-w-2xl rounded-2xl">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-2xl">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-white">Edit Task</CardTitle>
+                    <CardDescription className="text-white">
+                      Update task details
+                    </CardDescription>
+                  </div>
+                  <button
+                    onClick={() => setEditingTask(null)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
+              </CardHeader>
+
+              <CardContent className="pt-6">
+                <form onSubmit={handleEditSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="edit-title" className="font-semibold">
+                      Task Title *
+                    </Label>
+                    <Input
+                      id="edit-title"
+                      value={editFormData.title}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          title: e.target.value,
+                        })
+                      }
+                      placeholder="Enter task title"
+                      required
+                      className="mt-2 h-11 rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-description" className="font-semibold">
+                      Description
+                    </Label>
+                    <textarea
+                      id="edit-description"
+                      value={editFormData.description}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Enter task description"
+                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-priority" className="font-semibold">
+                      Priority *
+                    </Label>
+                    <select
+                      id="edit-priority"
+                      value={editFormData.priority}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          priority: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                      <option value="Critical">Critical</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-deadline" className="font-semibold">
+                      Deadline *
+                    </Label>
+                    <Input
+                      id="edit-deadline"
+                      type="date"
+                      value={editFormData.deadline}
+                      onChange={(e) =>
+                        setEditFormData({
+                          ...editFormData,
+                          deadline: e.target.value,
+                        })
+                      }
+                      required
+                      className="mt-2 h-11 rounded-xl"
+                    />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="edit-assignedTo" className="font-semibold">
+                      Assign To *
+                    </Label>
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-slate-300 rounded-xl p-3">
+                      {users.map((u) => (
+                        <label
+                          key={u._id}
+                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={editFormData.assignedTo.includes(u._id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setEditFormData({
+                                  ...editFormData,
+                                  assignedTo: [
+                                    ...editFormData.assignedTo,
+                                    u._id,
+                                  ],
+                                });
+                              } else {
+                                setEditFormData({
+                                  ...editFormData,
+                                  assignedTo: editFormData.assignedTo.filter(
+                                    (id) => id !== u._id,
+                                  ),
+                                });
+                              }
+                            }}
+                            className="rounded border-slate-300 w-4 h-4"
+                          />
+                          <span className="text-sm font-medium">{u.name}</span>
+                          <span className="text-xs text-slate-500 ml-auto">
+                            {u.role}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4 pt-2">
+                    <Button
+                      type="submit"
+                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold h-11"
+                    >
+                      Update Task
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setEditingTask(null)}
+                      className="rounded-xl h-11"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
       {/* Task Board - Main View */}
       {!canAssignTasks || activeTab === "view" ? (
         <>
@@ -1047,6 +1333,29 @@ export default function TasksPage() {
                                 </td>
                                 <td className="px-4 py-3">
                                   <div className="flex items-center gap-1">
+                                    {(task.assignedBy?._id === user?._id ||
+                                      task.assignedBy === user?._id) &&
+                                      task.status !== "Completed" && (
+                                        <button
+                                          onClick={() => handleEdit(task)}
+                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                          title="Edit task"
+                                        >
+                                          <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            className="w-4 h-4"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="2"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                          >
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                          </svg>
+                                        </button>
+                                      )}
                                     {task.status !== "Completed" && (
                                       <button
                                         onClick={() => handleComplete(task._id)}

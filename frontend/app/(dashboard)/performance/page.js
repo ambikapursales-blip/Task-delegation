@@ -24,21 +24,9 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  PieChart,
-  Pie,
   Cell,
-  LineChart,
-  Line,
 } from "recharts";
-import {
-  Trophy,
-  TrendingUp,
-  Users,
-  Calendar,
-  ArrowUp,
-  ArrowDown,
-  Filter,
-} from "lucide-react";
+import { Trophy, BarChart3, Table2 } from "lucide-react";
 
 const gradeColors = {
   "A+": "#22c55e",
@@ -49,6 +37,17 @@ const gradeColors = {
   D: "#6366f1",
   F: "#64748b",
 };
+
+const CHART_COLORS = [
+  "#6366f1",
+  "#22c55e",
+  "#f59e0b",
+  "#ef4444",
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#14b8a6",
+];
 
 export default function PerformancePage() {
   const { user } = useAuth();
@@ -61,6 +60,7 @@ export default function PerformancePage() {
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [trendUserId, setTrendUserId] = useState("");
   const [error, setError] = useState("");
+  const [viewMode, setViewMode] = useState("chart"); // "chart" or "table"
 
   const canView = ["Admin", "Manager", "HR"].includes(user?.role);
 
@@ -73,7 +73,7 @@ export default function PerformancePage() {
     try {
       setLoading(true);
       setError("");
-      if (activeTab === "leaderboard") {
+      if (activeTab === "leaderboard" || activeTab === "assignvscompleted") {
         const response = await performanceAPI.getLeaderboard({ period });
         setLeaderboard(response.data?.leaderboard || []);
       } else if (activeTab === "compare") {
@@ -146,6 +146,48 @@ export default function PerformancePage() {
     return colors[grade] || "bg-gray-100 text-gray-800 border-gray-300";
   };
 
+  const getCompletionBarColor = (percentage) => {
+    if (percentage >= 80) return "bg-green-500";
+    if (percentage >= 60) return "bg-yellow-500";
+    if (percentage >= 40) return "bg-orange-500";
+    return "bg-red-500";
+  };
+
+  const getCompletionTextColor = (percentage) => {
+    if (percentage >= 80) return "text-green-600";
+    if (percentage >= 60) return "text-yellow-600";
+    if (percentage >= 40) return "text-orange-600";
+    return "text-red-600";
+  };
+
+  // Prepare chart data for Assign vs Completed
+  const assignVsCompletedData = leaderboard.map((item, index) => ({
+    name: item?.user?.name || "Unknown",
+    assigned: item?.metrics?.totalTasks || 0,
+    completed: item?.metrics?.completedTasks || 0,
+    completionRate: item?.metrics?.taskCompletionRate || 0,
+    color: CHART_COLORS[index % CHART_COLORS.length],
+  }));
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0]?.payload;
+      return (
+        <div className="bg-white p-3 rounded-lg shadow-lg border border-slate-200">
+          <p className="font-semibold text-slate-800 mb-1">{label}</p>
+          <p className="text-sm text-indigo-600">Assigned: {data?.assigned}</p>
+          <p className="text-sm text-green-600">Completed: {data?.completed}</p>
+          <p
+            className={`text-sm font-bold ${getCompletionTextColor(data?.completionRate)}`}
+          >
+            Completion: {data?.completionRate?.toFixed(1)}%
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -184,22 +226,8 @@ export default function PerformancePage() {
           <Trophy className="h-4 w-4" />
           Leaderboard
         </Button>
-        <Button
-          variant={activeTab === "compare" ? "default" : "ghost"}
-          onClick={() => setActiveTab("compare")}
-          className="gap-2"
-        >
-          <Users className="h-4 w-4" />
-          Compare
-        </Button>
-        <Button
-          variant={activeTab === "trends" ? "default" : "ghost"}
-          onClick={() => setActiveTab("trends")}
-          className="gap-2"
-        >
-          <TrendingUp className="h-4 w-4" />
-          Trends
-        </Button>
+        {/* Compare tab hidden - not removed */}
+        {/* Trends tab hidden - not removed */}
       </div>
 
       {/* Leaderboard Tab */}
@@ -207,86 +235,495 @@ export default function PerformancePage() {
         <div className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Performance Leaderboard</CardTitle>
-              <CardDescription>
-                Top performers based on task completion, DWR approval, and
-                performance score
-              </CardDescription>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Performance Leaderboard</CardTitle>
+                  <CardDescription>
+                    Compare task assignments with completions across employees
+                  </CardDescription>
+                </div>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <Button
+                    variant={viewMode === "chart" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("chart")}
+                    className="gap-1"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Chart
+                  </Button>
+                  <Button
+                    variant={viewMode === "table" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                    className="gap-1"
+                  >
+                    <Table2 className="h-4 w-4" />
+                    Table
+                  </Button>
+                </div>
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                {leaderboard.map((item, index) => (
-                  <div
-                    key={item?.user?._id || index}
-                    className="flex items-center justify-between p-4 rounded-lg border hover:bg-slate-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${getRankColor(
-                          index,
-                        )}`}
+              {viewMode === "chart" ? (
+                <div className="space-y-6">
+                  <div className="w-full">
+                    <ResponsiveContainer width="100%" height={400}>
+                      <BarChart
+                        data={assignVsCompletedData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                        barGap={4}
                       >
-                        {index + 1}
-                      </div>
-                      <img
-                        src={
-                          item?.user?.avatar ||
-                          (item?.user?.name === "Test User"
-                            ? "https://media.licdn.com/dms/image/v2/D4D35AQFg1T2O6uFFqQ/profile-framedphoto-shrink_200_200/B4DZ2VAojkGcAY-/0/1776321464831?e=1776927600&v=beta&t=ScJJtGxGE9WzGYJtjXpkcvYj-RECD_KumfnxzblzKZk"
-                            : `https://api.dicebear.com/7.x/avataaars/svg?seed=${item?.user?.name || "user"}`)
-                        }
-                        alt={item?.user?.name || "User"}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
-                      />
-                      <div>
-                        <p className="font-semibold">
-                          {item?.user?.name || "Unknown"}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {item?.user?.department || "N/A"} •{" "}
-                          {item?.user?.role || "N/A"}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6 text-sm">
-                      <div className="text-center">
-                        <p className="text-muted-foreground">Score</p>
-                        <p
-                          className={`font-semibold ${getPerformanceColor(item?.user?.performanceScore)}`}
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 12, fill: "#475569" }}
+                          angle={-35}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis tick={{ fontSize: 12, fill: "#475569" }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                          wrapperStyle={{ fontSize: "13px" }}
+                          iconType="rounded"
+                        />
+                        <Bar
+                          dataKey="assigned"
+                          name="Assigned"
+                          fill="#6366f1"
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={50}
                         >
-                          {item?.user?.performanceScore || 0}
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-muted-foreground">Task Rate</p>
-                        <p className="font-semibold text-blue-600">
-                          {item?.metrics?.taskCompletionRate?.toFixed(1) || 0}%
-                        </p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-muted-foreground">DWR Rate</p>
-                        <p className="font-semibold text-green-600">
-                          {item?.metrics?.dwrApprovalRate?.toFixed(1) || 0}%
-                        </p>
-                      </div>
-                      <Badge className={getGradeColor(item?.user?.grade)}>
-                        {item?.user?.grade || "N/A"}
-                      </Badge>
-                    </div>
+                          {assignVsCompletedData.map((entry, index) => (
+                            <Cell key={`assigned-${index}`} fill="#6366f1" />
+                          ))}
+                        </Bar>
+                        <Bar
+                          dataKey="completed"
+                          name="Completed"
+                          fill="#22c55e"
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          {assignVsCompletedData.map((entry, index) => (
+                            <Cell key={`completed-${index}`} fill="#22c55e" />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
                   </div>
-                ))}
-                {leaderboard.length === 0 && (
-                  <p className="text-center text-muted-foreground py-8">
-                    No performance data available
-                  </p>
-                )}
-              </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {assignVsCompletedData.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <p className="font-semibold text-sm truncate">
+                            {item.name}
+                          </p>
+                        </div>
+                        <div className="flex items-end justify-between mb-2">
+                          <div>
+                            <p className="text-xs text-slate-500">Completion</p>
+                            <p
+                              className={`text-2xl font-bold ${getCompletionTextColor(item.completionRate)}`}
+                            >
+                              {item.completionRate.toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="text-right text-xs text-slate-500">
+                            <p>
+                              {item.completed}/{item.assigned}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${getCompletionBarColor(item.completionRate)}`}
+                            style={{
+                              width: `${Math.min(item.completionRate, 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          #
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          Employee
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Assigned
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Completed
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Pending
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Completion %
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          Progress
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {leaderboard.map((item, index) => {
+                        const assigned = item?.metrics?.totalTasks || 0;
+                        const completed = item?.metrics?.completedTasks || 0;
+                        const pending = assigned - completed;
+                        const completionRate =
+                          item?.metrics?.taskCompletionRate || 0;
+                        const color = CHART_COLORS[index % CHART_COLORS.length];
+                        return (
+                          <tr
+                            key={item?.user?._id || index}
+                            className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                          >
+                            <td className="py-3 px-4">
+                              <span
+                                className={`font-bold ${getRankColor(index)}`}
+                              >
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={
+                                    item?.user?.avatar ||
+                                    (item?.user?.name === "Test User"
+                                      ? "https://media.licdn.com/dms/image/v2/D4D35AQFg1T2O6uFFqQ/profile-framedphoto-shrink_200_200/B4DZ2VAojkGcAY-/0/1776321464831?e=1776927600&v=beta&t=ScJJtGxGE9WzGYJtjXpkcvYj-RECD_KumfnxzblzKZk"
+                                      : `https://api.dicebear.com/7.x/avataaars/svg?seed=${item?.user?.name || "user"}`)
+                                  }
+                                  alt={item?.user?.name || "User"}
+                                  className="w-10 h-10 rounded-full object-cover border-2 border-slate-200"
+                                />
+                                <div>
+                                  <p className="font-medium">
+                                    {item?.user?.name || "Unknown"}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {item?.user?.department || "N/A"} •{" "}
+                                    {item?.user?.role || "N/A"}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-indigo-600">
+                                {assigned}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-green-600">
+                                {completed}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-orange-600">
+                                {pending}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span
+                                className={`font-bold ${getCompletionTextColor(completionRate)}`}
+                              >
+                                {completionRate.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 bg-slate-100 rounded-full h-2.5">
+                                  <div
+                                    className={`h-2.5 rounded-full ${getCompletionBarColor(completionRate)}`}
+                                    style={{
+                                      width: `${Math.min(completionRate, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-slate-500">
+                                  {completionRate.toFixed(0)}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {leaderboard.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            className="py-8 text-center text-muted-foreground"
+                          >
+                            No performance data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
       )}
 
-      {/* Compare Tab */}
+      {/* Assign vs Completed Tab - removed, now merged into Leaderboard */}
+      {activeTab === "assignvscompleted" && (
+        <div className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Assigned vs Completed Tasks</CardTitle>
+                  <CardDescription>
+                    Compare task assignments with completions across employees
+                  </CardDescription>
+                </div>
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
+                  <Button
+                    variant={viewMode === "chart" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("chart")}
+                    className="gap-1"
+                  >
+                    <BarChart3 className="h-4 w-4" />
+                    Chart
+                  </Button>
+                  <Button
+                    variant={viewMode === "table" ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setViewMode("table")}
+                    className="gap-1"
+                  >
+                    <Table2 className="h-4 w-4" />
+                    Table
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {viewMode === "chart" ? (
+                <div className="space-y-6">
+                  <div className="w-full">
+                    <ResponsiveContainer width="100%" height={400}>
+                      <BarChart
+                        data={assignVsCompletedData}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+                        barGap={4}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 12, fill: "#475569" }}
+                          angle={-35}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis tick={{ fontSize: 12, fill: "#475569" }} />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend
+                          wrapperStyle={{ fontSize: "13px" }}
+                          iconType="rounded"
+                        />
+                        <Bar
+                          dataKey="assigned"
+                          name="Assigned"
+                          fill="#6366f1"
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          {assignVsCompletedData.map((entry, index) => (
+                            <Cell key={`assigned-${index}`} fill="#6366f1" />
+                          ))}
+                        </Bar>
+                        <Bar
+                          dataKey="completed"
+                          name="Completed"
+                          fill="#22c55e"
+                          radius={[6, 6, 0, 0]}
+                          maxBarSize={50}
+                        >
+                          {assignVsCompletedData.map((entry, index) => (
+                            <Cell key={`completed-${index}`} fill="#22c55e" />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {assignVsCompletedData.map((item, index) => (
+                      <div
+                        key={index}
+                        className="bg-white border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: item.color }}
+                          />
+                          <p className="font-semibold text-sm truncate">
+                            {item.name}
+                          </p>
+                        </div>
+                        <div className="flex items-end justify-between mb-2">
+                          <div>
+                            <p className="text-xs text-slate-500">Completion</p>
+                            <p
+                              className={`text-2xl font-bold ${getCompletionTextColor(item.completionRate)}`}
+                            >
+                              {item.completionRate.toFixed(1)}%
+                            </p>
+                          </div>
+                          <div className="text-right text-xs text-slate-500">
+                            <p>
+                              {item.completed}/{item.assigned}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full ${getCompletionBarColor(item.completionRate)}`}
+                            style={{
+                              width: `${Math.min(item.completionRate, 100)}%`,
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-slate-200">
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          #
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          Employee
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Assigned
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Completed
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Pending
+                        </th>
+                        <th className="text-center py-3 px-4 font-semibold text-slate-600">
+                          Completion %
+                        </th>
+                        <th className="text-left py-3 px-4 font-semibold text-slate-600">
+                          Progress
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {assignVsCompletedData.map((item, index) => {
+                        const pending = item.assigned - item.completed;
+                        return (
+                          <tr
+                            key={index}
+                            className="border-b border-slate-100 hover:bg-slate-50 transition-colors"
+                          >
+                            <td className="py-3 px-4">
+                              <span
+                                className={`font-bold ${getRankColor(index)}`}
+                              >
+                                {index + 1}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-3">
+                                <div
+                                  className="w-3 h-3 rounded-full flex-shrink-0"
+                                  style={{ backgroundColor: item.color }}
+                                />
+                                <span className="font-medium">{item.name}</span>
+                              </div>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-indigo-600">
+                                {item.assigned}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-green-600">
+                                {item.completed}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span className="font-semibold text-orange-600">
+                                {pending}
+                              </span>
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <span
+                                className={`font-bold ${getCompletionTextColor(item.completionRate)}`}
+                              >
+                                {item.completionRate.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="py-3 px-4">
+                              <div className="flex items-center gap-2">
+                                <div className="w-24 bg-slate-100 rounded-full h-2.5">
+                                  <div
+                                    className={`h-2.5 rounded-full ${getCompletionBarColor(item.completionRate)}`}
+                                    style={{
+                                      width: `${Math.min(item.completionRate, 100)}%`,
+                                    }}
+                                  />
+                                </div>
+                                <span className="text-xs text-slate-500">
+                                  {item.completionRate.toFixed(0)}%
+                                </span>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                      {assignVsCompletedData.length === 0 && (
+                        <tr>
+                          <td
+                            colSpan={7}
+                            className="py-8 text-center text-muted-foreground"
+                          >
+                            No data available
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Compare Tab - hidden but code preserved */}
       {activeTab === "compare" && (
         <div className="space-y-4">
           <Card>
@@ -437,7 +874,7 @@ export default function PerformancePage() {
         </div>
       )}
 
-      {/* Trends Tab */}
+      {/* Trends Tab - hidden but code preserved */}
       {activeTab === "trends" && (
         <div className="space-y-4">
           <Card>

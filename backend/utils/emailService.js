@@ -1,5 +1,24 @@
 const nodemailer = require("nodemailer");
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
+// Reusable button style
+const siteButtonHtml = `
+  <div style="text-align: center; margin: 25px 0;">
+    <a href="${FRONTEND_URL}/tasks" target="_blank" style="
+      display: inline-block;
+      background: #0F6E56;
+      color: #ffffff;
+      padding: 12px 32px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+    ">Go to Site</a>
+  </div>
+`;
+
 // Create transporter using SMTP configuration
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -48,7 +67,7 @@ const sendTaskAssignmentEmail = async (userEmail, userName, taskDetails) => {
         <p style="margin: 0;"><strong>Priority:</strong> ${taskDetails.priority}</p>
         <p style="margin: 0;"><strong>Deadline:</strong> ${taskDetails.deadline ? new Date(taskDetails.deadline).toLocaleDateString() : "No deadline"}</p>
       </div>
-      <p>Please log in to the system to view and complete this task.</p>
+      ${siteButtonHtml}
       <p style="color: #999; font-size: 12px;">This is an automated email. Please do not reply.</p>
     </div>
   `;
@@ -58,7 +77,11 @@ const sendTaskAssignmentEmail = async (userEmail, userName, taskDetails) => {
 /**
  * Send task completion email to assigner
  */
-const sendTaskCompletionEmail = async (assignerEmail, taskDetails, completedBy) => {
+const sendTaskCompletionEmail = async (
+  assignerEmail,
+  taskDetails,
+  completedBy,
+) => {
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #0F6E56;">Task Completed</h2>
@@ -69,7 +92,7 @@ const sendTaskCompletionEmail = async (assignerEmail, taskDetails, completedBy) 
         <p style="margin: 0 0 10px 0; color: #666;">${taskDetails.description || "No description"}</p>
         <p style="margin: 0;"><strong>Priority:</strong> ${taskDetails.priority}</p>
       </div>
-      <p>Please log in to the system to review the completed task.</p>
+      ${siteButtonHtml}
       <p style="color: #999; font-size: 12px;">This is an automated email. Please do not reply.</p>
     </div>
   `;
@@ -90,7 +113,7 @@ const sendTaskReminderEmail = async (userEmail, userName, taskDetails) => {
         <p style="margin: 0 0 10px 0; color: #666;">${taskDetails.description || "No description"}</p>
         <p style="margin: 0;"><strong>Deadline:</strong> ${taskDetails.deadline ? new Date(taskDetails.deadline).toLocaleDateString() : "No deadline"}</p>
       </div>
-      <p>Please complete this task as soon as possible.</p>
+      ${siteButtonHtml}
       <p style="color: #999; font-size: 12px;">This is an automated email. Please do not reply.</p>
     </div>
   `;

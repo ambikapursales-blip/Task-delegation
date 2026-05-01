@@ -67,7 +67,7 @@ const T = {
 };
 
 /* ─── Stat Card ─────────────────────────────────────────────────── */
-function StatCard({ title, value, icon, trend, trendUp, accent }) {
+function StatCard({ title, value, icon, trend, trendUp, accent, href }) {
   const variants = {
     purple: {
       gradient: "from-[#7C3AED] to-[#5B21B6]",
@@ -100,9 +100,9 @@ function StatCard({ title, value, icon, trend, trendUp, accent }) {
   };
   const v = variants[accent] || variants.purple;
 
-  return (
+  const cardContent = (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${v.gradient} p-5 shadow-lg hover:-translate-y-1 transition-all duration-200 cursor-default`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${v.gradient} p-5 shadow-lg ${href ? "hover:-translate-y-1 cursor-pointer" : "cursor-default"} transition-all duration-200`}
     >
       {/* Background decoration */}
       <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
@@ -129,6 +129,12 @@ function StatCard({ title, value, icon, trend, trendUp, accent }) {
       </div>
     </div>
   );
+
+  if (href) {
+    return <Link href={href}>{cardContent}</Link>;
+  }
+
+  return cardContent;
 }
 
 /* ─── Card ───────────────────────────────────────────────────────── */
@@ -776,6 +782,7 @@ export default function DashboardPage() {
               trend="+12% this month"
               trendUp
               accent="purple"
+              href="/tasks"
             />
             <StatCard
               title="Completed"
@@ -784,6 +791,7 @@ export default function DashboardPage() {
               trend={`${completionRate}% completion`}
               trendUp
               accent="emerald"
+              href="/tasks?status=completed"
             />
             <StatCard
               title="Pending"
@@ -793,6 +801,7 @@ export default function DashboardPage() {
                 analytics?.tasks?.pending > 0 ? "Needs attention" : "All clear"
               }
               accent="amber"
+              href="/tasks?status=pending"
             />
             {(isAdminOrManager || isHR) && (
               <StatCard
