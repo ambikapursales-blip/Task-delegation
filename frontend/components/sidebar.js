@@ -56,27 +56,12 @@ const getAllMenuItems = () => [
 ];
 
 const ROLE_MENU = {
-  Admin: ["Dashboard", "Tasks", "Events", "Attendance", "Users", "Performance"],
-  Manager: [
-    "Dashboard",
-    "Tasks",
-
-    "Events",
-    "Attendance",
-    "Users",
-    "Performance",
-  ],
+  Admin: ["Dashboard", "Tasks", "Events", "Users", "Performance"],
+  Manager: ["Dashboard", "Tasks", "Events", "Users", "Performance"],
   HR: ["Dashboard", "Tasks", "DWR", "Attendance", "Performance"],
-  "Sales Executive": [
-    "Dashboard",
-    "Tasks",
-
-    "Events",
-    "Attendance",
-    "Performance",
-  ],
-  Coordinator: ["Dashboard", "Tasks", "Events", "Attendance", "Performance"],
-  It: ["Dashboard", "Tasks", "Events", "Attendance", "Performance"],
+  "Sales Executive": ["Dashboard", "Tasks", "Events", "Performance"],
+  Coordinator: ["Dashboard", "Tasks", "Events", "Performance"],
+  It: ["Dashboard", "Tasks", "Events", "Performance"],
 };
 
 export default function Sidebar({ isOpen, setIsOpen }) {

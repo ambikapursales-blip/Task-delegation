@@ -5,6 +5,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const cookieParser = require("cookie-parser");
+require("dns").setDefaultResultOrder("ipv4first");
 require("dotenv").config();
 
 const authRoutes = require("./routes/authRoutes");

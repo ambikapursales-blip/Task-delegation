@@ -281,6 +281,7 @@ export default function TasksPage() {
       });
       fetchTasks();
       setActiveTab("view");
+      setActiveTab("view");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create task");
     } finally {
@@ -771,7 +772,8 @@ export default function TasksPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setActiveTab("view")}
-                      className="rounded-xl h-11"
+                      disabled={isCreating}
+                      className="rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </Button>
