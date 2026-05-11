@@ -78,6 +78,7 @@ export default function TasksPage() {
   const [users, setUsers] = useState([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   // Initialize taskViewTab from URL params to avoid race condition
   const getInitialTab = () => {
     const statusParam = searchParams.get("status");
@@ -245,6 +246,7 @@ export default function TasksPage() {
     e.preventDefault();
     setError("");
     setSuccess("");
+    setIsSubmitting(true);
 
     try {
       const taskData = {
@@ -278,8 +280,11 @@ export default function TasksPage() {
         recurrenceEndDate: "",
       });
       fetchTasks();
+      setActiveTab("view");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to create task");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -678,8 +683,8 @@ export default function TasksPage() {
                           <input
                             type="radio"
                             name="taskType"
-                            value="One Day"
-                            checked={formData.taskType === "One Day"}
+                            value="daily"
+                            checked={formData.taskType === "daily"}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
@@ -695,187 +700,72 @@ export default function TasksPage() {
                             }
                             className="w-4 h-4 text-indigo-600"
                           />
-                          <span className="text-sm">One Day</span>
+                          <span className="text-sm">Daily</span>
                         </label>
                         <label className="flex items-center space-x-2 cursor-pointer">
                           <input
                             type="radio"
                             name="taskType"
-                            value="Customize"
-                            checked={formData.taskType === "Customize"}
+                            value="weekly"
+                            checked={formData.taskType === "weekly"}
                             onChange={(e) =>
                               setFormData({
                                 ...formData,
                                 taskType: e.target.value,
                                 isRecurring: true,
+                                recurrencePattern: {
+                                  frequency: "weekly",
+                                  interval: 1,
+                                  daysOfWeek: [],
+                                  dayOfMonth: 1,
+                                },
                               })
                             }
                             className="w-4 h-4 text-indigo-600"
                           />
-                          <span className="text-sm">Customize</span>
+                          <span className="text-sm">Weekly</span>
+                        </label>
+                        <label className="flex items-center space-x-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="taskType"
+                            value="monthly"
+                            checked={formData.taskType === "monthly"}
+                            onChange={(e) =>
+                              setFormData({
+                                ...formData,
+                                taskType: e.target.value,
+                                isRecurring: true,
+                                recurrencePattern: {
+                                  frequency: "monthly",
+                                  interval: 1,
+                                  daysOfWeek: [],
+                                  dayOfMonth: 1,
+                                },
+                              })
+                            }
+                            className="w-4 h-4 text-indigo-600"
+                          />
+                          <span className="text-sm">Monthly</span>
                         </label>
                       </div>
-
-                      {formData.taskType === "Customize" && (
-                        <div className="bg-slate-50 p-4 rounded-xl space-y-3">
-                          <div>
-                            <Label className="text-sm font-medium">
-                              Frequency
-                            </Label>
-                            <select
-                              value={formData.recurrencePattern.frequency}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  recurrencePattern: {
-                                    ...formData.recurrencePattern,
-                                    frequency: e.target.value,
-                                  },
-                                })
-                              }
-                              className="mt-1 w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                              <option value="daily">Daily</option>
-                              <option value="weekly">Weekly</option>
-                              <option value="monthly">Monthly</option>
-                            </select>
-                          </div>
-
-                          <div>
-                            <Label className="text-sm font-medium">
-                              Interval (every X days/weeks/months)
-                            </Label>
-                            <Input
-                              type="number"
-                              min="1"
-                              value={formData.recurrencePattern.interval}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  recurrencePattern: {
-                                    ...formData.recurrencePattern,
-                                    interval: parseInt(e.target.value) || 1,
-                                  },
-                                })
-                              }
-                              className="mt-1 h-10 rounded-lg"
-                            />
-                          </div>
-
-                          {formData.recurrencePattern.frequency ===
-                            "weekly" && (
-                            <div>
-                              <Label className="text-sm font-medium">
-                                Days of Week
-                              </Label>
-                              <div className="mt-1 flex gap-2 flex-wrap">
-                                {[
-                                  "Sunday",
-                                  "Monday",
-                                  "Tuesday",
-                                  "Wednesday",
-                                  "Thursday",
-                                  "Friday",
-                                  "Saturday",
-                                ].map((day) => (
-                                  <label
-                                    key={day}
-                                    className="flex items-center space-x-1 cursor-pointer"
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={formData.recurrencePattern.daysOfWeek.includes(
-                                        day,
-                                      )}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          setFormData({
-                                            ...formData,
-                                            recurrencePattern: {
-                                              ...formData.recurrencePattern,
-                                              daysOfWeek: [
-                                                ...formData.recurrencePattern
-                                                  .daysOfWeek,
-                                                day,
-                                              ],
-                                            },
-                                          });
-                                        } else {
-                                          setFormData({
-                                            ...formData,
-                                            recurrencePattern: {
-                                              ...formData.recurrencePattern,
-                                              daysOfWeek:
-                                                formData.recurrencePattern.daysOfWeek.filter(
-                                                  (d) => d !== day,
-                                                ),
-                                            },
-                                          });
-                                        }
-                                      }}
-                                      className="w-4 h-4 text-indigo-600 rounded"
-                                    />
-                                    <span className="text-xs">
-                                      {day.slice(0, 3)}
-                                    </span>
-                                  </label>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {formData.recurrencePattern.frequency ===
-                            "monthly" && (
-                            <div>
-                              <Label className="text-sm font-medium">
-                                Day of Month
-                              </Label>
-                              <Input
-                                type="number"
-                                min="1"
-                                max="31"
-                                value={formData.recurrencePattern.dayOfMonth}
-                                onChange={(e) =>
-                                  setFormData({
-                                    ...formData,
-                                    recurrencePattern: {
-                                      ...formData.recurrencePattern,
-                                      dayOfMonth: parseInt(e.target.value) || 1,
-                                    },
-                                  })
-                                }
-                                className="mt-1 h-10 rounded-lg"
-                              />
-                            </div>
-                          )}
-
-                          <div>
-                            <Label className="text-sm font-medium">
-                              Recurrence End Date
-                            </Label>
-                            <Input
-                              type="date"
-                              value={formData.recurrenceEndDate}
-                              onChange={(e) =>
-                                setFormData({
-                                  ...formData,
-                                  recurrenceEndDate: e.target.value,
-                                })
-                              }
-                              className="mt-1 h-10 rounded-lg"
-                            />
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <Button
                       type="submit"
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold h-11"
+                      disabled={isSubmitting}
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold h-11 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      Create Task
+                      {isSubmitting ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          Creating...
+                        </>
+                      ) : (
+                        "Create Task"
+                      )}
                     </Button>
                     <Button
                       type="button"
