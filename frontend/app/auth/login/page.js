@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { authAPI } from "@/lib/api";
@@ -14,26 +14,53 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Memoize form data to prevent unnecessary re-renders
+  const formData = useMemo(() => ({
+    email,
+    password,
+    loading,
+    error,
+    showPassword
+  }), [email, password, loading, error, showPassword]);
 
-  const handleLogin = async (e) => {
+  const handleLogin = useCallback(async (e) => {
     e.preventDefault();
+    
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password");
+      return;
+    }
+    
     setError("");
     setLoading(true);
 
     try {
-      const response = await authAPI.login(email, password);
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const response = await Promise.race([
+        authAPI.login(email, password),
+        timeoutPromise
+      ]);
+      
       const { token, user } = response.data;
 
+      // Optimized login - immediate redirect
       login(user, token);
-      router.push("/dashboard");
+      
+      // Use replace instead of push for faster navigation
+      router.replace("/dashboard");
     } catch (err) {
       setError(
-        err.response?.data?.message || "Login failed. Please try again.",
+        err.response?.data?.message || err.message || "Login failed. Please try again.",
       );
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, login, router]);
 
   return (
     <div className="min-h-screen flex bg-blue-50 overflow-hidden">

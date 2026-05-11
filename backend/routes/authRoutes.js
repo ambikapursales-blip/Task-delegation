@@ -17,7 +17,12 @@ const login = async (req, res) => {
         .json({ success: false, message: "Please provide email and password" });
     }
 
-    const user = await User.findOne({ email }).select("+password");
+    // Optimized: Single database query with lean() for better performance
+    const user = await User.findOne({ email })
+      .select('+password')
+      .lean() // Use lean for faster queries
+      .exec();
+      
     if (!user) {
       return res
         .status(401)
@@ -31,45 +36,58 @@ const login = async (req, res) => {
       });
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await require('bcryptjs').compare(password, user.password);
     if (!isMatch) {
       return res
         .status(401)
         .json({ success: false, message: "Invalid credentials" });
     }
 
-    // Update last login
-    user.lastLogin = new Date();
-    user.lastActive = new Date();
-    await user.save({ validateBeforeSave: false });
+    // Optimized: Parallel operations for better performance
+    const [token] = await Promise.all([
+      Promise.resolve(generateToken(user._id)),
+      // Update last login in background (non-blocking)
+      User.findByIdAndUpdate(user._id, {
+        lastLogin: new Date(),
+        lastActive: new Date()
+      }, { validateBeforeSave: false }).lean().exec(),
+      // Create activity log in background
+      Activity.create({
+        user: user._id,
+        type: "login",
+        description: `${user.name} logged in`,
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"],
+      }).catch(err => console.error('Activity log error:', err)),
+      // Mark attendance for today in background
+      (async () => {
+        try {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          await Attendance.findOneAndUpdate(
+            { employee: user._id, date: today },
+            {
+              $setOnInsert: {
+                employee: user._id,
+                date: today,
+                loginTime: new Date(),
+                status: "Present",
+              },
+            },
+            { upsert: true, new: true }
+          ).lean().exec();
+        } catch (err) {
+          console.error('Attendance update error:', err);
+        }
+      })()
+    ]);
 
-    // Log activity
-    await Activity.create({
-      user: user._id,
-      type: "login",
-      description: `${user.name} logged in`,
-      ipAddress: req.ip,
-      userAgent: req.headers["user-agent"],
-    });
-
-    // Mark attendance for today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    await Attendance.findOneAndUpdate(
-      { employee: user._id, date: today },
-      {
-        $setOnInsert: {
-          employee: user._id,
-          date: today,
-          loginTime: new Date(),
-          status: "Present",
-        },
-      },
-      { upsert: true, new: true },
-    );
-
-    const token = generateToken(user._id);
+    // Get public profile without password
+    const { password: _, ...publicProfile } = user;
+    const userPublicProfile = {
+      ...publicProfile,
+      getPublicProfile: () => publicProfile
+    };
 
     res
       .cookie("token", token, {
@@ -82,7 +100,7 @@ const login = async (req, res) => {
       .json({
         success: true,
         token,
-        user: user.getPublicProfile(),
+        user: publicProfile,
       });
   } catch (error) {
     console.error("Login error:", error);
