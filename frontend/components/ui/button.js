@@ -1,17 +1,15 @@
 import * as React from "react";
 
 const buttonVariants = {
-  base: "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
+  base: "inline-flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed",
   variants: {
     variant: {
-      default: "bg-[#C1533A] text-white hover:bg-[#a03f2a]",
-      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-      destructive:
-        "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-      outline:
-        "border border-[#C1533A] bg-background text-[#C1533A] hover:bg-[#faeae6]",
-      ghost: "hover:bg-[#faeae6] text-[#C1533A]",
-      link: "text-[#C1533A] underline-offset-4 hover:underline",
+      default: "bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold hover:shadow-neon hover:scale-[1.02] active:scale-95",
+      secondary: "bg-white/[0.08] text-white hover:bg-white/[0.12] border border-white/[0.06]",
+      destructive: "bg-gradient-to-r from-[#FF6B6B] to-[#FF4444] text-white font-semibold hover:shadow-lg",
+      outline: "border border-white/[0.12] bg-white/[0.03] text-white/80 hover:bg-white/[0.06] hover:text-white hover:border-white/[0.2]",
+      ghost: "hover:bg-white/[0.06] text-white/70 hover:text-white",
+      link: "text-[#00FF88] underline-offset-4 hover:underline",
     },
     size: {
       default: "h-10 px-4 py-2",

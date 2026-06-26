@@ -408,35 +408,22 @@ export default function TasksPage() {
 
   const getPriorityColor = (priority) => {
     const colors = {
-      Critical: "bg-red-100 text-red-800 border-red-300",
-      High: "bg-orange-100 text-orange-800 border-orange-300",
-      Medium: "bg-yellow-100 text-yellow-800 border-yellow-300",
-      Low: "bg-green-100 text-green-800 border-green-300",
+      Critical: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
+      High: "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+      Medium: "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
+      Low: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
     };
-    return colors[priority] || "bg-gray-100 text-gray-800 border-gray-300";
+    return colors[priority] || "bg-white/10 text-white/60 border-white/10";
   };
 
   const getStatusColor = (status) => {
     return status === "completed"
-      ? "bg-green-50 border-green-200"
-      : "bg-white border-slate-200";
+      ? "bg-white/[0.04] border-white/[0.06]"
+      : "bg-white/[0.02] border-white/[0.06]";
   };
 
   const getRowBackgroundColor = (status, priority) => {
-    // If completed, show green
-    if (status?.toLowerCase() === "completed") {
-      return "bg-green-100";
-    }
-    // If in progress, show blue
-    if (status?.toLowerCase() === "in progress") {
-      return "bg-blue-100";
-    }
-    // If pending, color by priority
-    if (priority === "Critical") return "bg-red-100";
-    if (priority === "High") return "bg-orange-100";
-    if (priority === "Medium") return "bg-yellow-100";
-    if (priority === "Low") return "bg-green-100";
-    return "bg-white";
+    return "bg-transparent";
   };
 
   const filteredTasks = canAssignTasks
@@ -477,22 +464,22 @@ export default function TasksPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-[#0B1220]">
       {/* Header with Create Task */}
-      <div className="sticky top-0 z-30 bg-gradient-to-r  shadow-lg">
+      <div className="sticky top-0 z-30 bg-[#0A0F1A]/80 backdrop-blur-xl border-b border-white/[0.06] shadow-glass-sm">
         <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-extrabold text-blue-900 tracking-tight">
+            <h1 className="text-3xl font-bold text-white tracking-tight">
               Tasks
             </h1>
-            <p className="text-blue-800 text-base mt-1 font-medium">
+            <p className="text-white/50 text-base mt-1 font-medium">
               {canAssignTasks ? "Manage all tasks" : "Your assigned tasks"}
             </p>
           </div>
           {canAssignTasks && (
             <Button
               onClick={handleTaskCreate}
-              className="bg-indigo-700 text-gray-100 hover:bg-indigo-900 rounded-xl font-bold text-base px-6 py-3 shadow-lg"
+              className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] hover:shadow-neon rounded-xl font-bold text-base px-6 py-3"
             >
               <Plus className="h-5 w-5 mr-2" />
               Create Task
@@ -516,16 +503,16 @@ export default function TasksPage() {
 
       {/* Create Task Modal */}
       {canAssignTasks && activeTab === "create" && (
-        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 z-50 overflow-y-auto backdrop-blur-sm">
           <div className="min-h-screen flex items-center justify-center p-4">
-            <Card className="w-full max-w-2xl rounded-2xl">
-              <CardHeader className="bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-t-2xl">
+            <Card className="w-full max-w-2xl rounded-2xl border-white/[0.08]">
+              <CardHeader className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div>
-                    <CardTitle className="text-white">
+                    <CardTitle className="text-[#0B1220]">
                       Create New Task
                     </CardTitle>
-                    <CardDescription className="text-white">
+                    <CardDescription className="text-[#0B1220]/70">
                       Assign tasks to team members
                     </CardDescription>
                   </div>
@@ -541,7 +528,7 @@ export default function TasksPage() {
               <CardContent className="pt-6">
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="title" className="font-semibold">
+                    <Label htmlFor="title" className="font-medium text-white/80">
                       Task Title *
                     </Label>
                     <Input
@@ -552,12 +539,12 @@ export default function TasksPage() {
                       }
                       placeholder="Enter task title"
                       required
-                      className="mt-2 h-11 rounded-xl"
+                      className="mt-2 h-11 rounded-xl bg-white/[0.05] border-white/[0.1] text-white"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="description" className="font-semibold">
+                    <Label htmlFor="description" className="font-medium text-white/80">
                       Description
                     </Label>
                     <textarea
@@ -570,20 +557,20 @@ export default function TasksPage() {
                         })
                       }
                       placeholder="Enter task description"
-                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="mt-2 w-full px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 focus:border-[#00FF88]/50"
                       rows="3"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="assignedTo" className="font-semibold">
+                    <Label htmlFor="assignedTo" className="font-medium text-white/80">
                       Assign To *
                     </Label>
-                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-slate-300 rounded-xl p-3">
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-white/[0.1] bg-white/[0.03] rounded-xl p-3">
                       {users.map((u) => (
                         <label
                           key={u._id}
-                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg"
+                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-white/[0.05] rounded-lg"
                         >
                           <input
                             type="checkbox"
@@ -603,10 +590,10 @@ export default function TasksPage() {
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 w-4 h-4"
+                            className="rounded border-white/30 bg-white/10 w-4 h-4 accent-[#00FF88]"
                           />
-                          <span className="text-sm font-medium">{u.name}</span>
-                          <span className="text-xs text-slate-500 ml-auto">
+                          <span className="text-sm font-medium text-white/85">{u.name}</span>
+                          <span className="text-xs text-white/40 ml-auto">
                             {u.role}
                           </span>
                         </label>
@@ -616,139 +603,80 @@ export default function TasksPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <Label htmlFor="priority" className="font-semibold">
-                        Priority
-                      </Label>
-                      <select
-                        id="priority"
-                        value={formData.priority}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            priority: e.target.value,
-                          })
-                        }
-                        className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                      >
-                        <option value="Low">Low</option>
-                        <option value="Medium">Medium</option>
-                        <option value="High">High</option>
-                        <option value="Critical">Critical</option>
-                      </select>
+                    <Label htmlFor="priority" className="font-medium text-white/80">
+                      Priority
+                    </Label>
+                    <select
+                      id="priority"
+                      value={formData.priority}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          priority: e.target.value,
+                        })
+                      }
+                      className="mt-2 w-full px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 focus:border-[#00FF88]/50"
+                    >
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                      <option value="Critical">Critical</option>
+                    </select>
                     </div>
 
                     <div>
-                      <Label htmlFor="deadline" className="font-semibold">
-                        Deadline
-                      </Label>
-                      <Input
-                        id="deadline"
-                        type="date"
-                        value={formData.deadline}
-                        onChange={(e) =>
-                          setFormData({
-                            ...formData,
-                            deadline: e.target.value,
-                          })
-                        }
-                        className="mt-2 h-11 rounded-xl"
-                      />
+                    <Label htmlFor="deadline" className="font-medium text-white/80">
+                      Deadline
+                    </Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={formData.deadline}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          deadline: e.target.value,
+                        })
+                      }
+                      className="mt-2 h-11 rounded-xl bg-white/[0.05] border-white/[0.1] text-white"
+                    />
                     </div>
                   </div>
 
                   {/* Recurring Task Section */}
-                  <div className="border-t border-slate-200 pt-4">
-                    <Label className="font-semibold mb-3 block">
+                  <div className="border-t border-white/[0.08] pt-4">
+                    <Label className="font-medium text-white/80 mb-3 block">
                       Recurring Task
                     </Label>
                     <div className="space-y-3">
-                      <div className="flex gap-4">
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taskType"
-                            value="One-time"
-                            checked={formData.taskType === "One-time"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taskType: e.target.value,
-                                isRecurring: false,
-                              })
-                            }
-                            className="w-4 h-4 text-indigo-600"
-                          />
-                          <span className="text-sm">One-time</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taskType"
-                            value="daily"
-                            checked={formData.taskType === "daily"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taskType: e.target.value,
-                                isRecurring: true,
-                                recurrencePattern: {
-                                  frequency: "daily",
-                                  interval: 1,
-                                  daysOfWeek: [],
-                                  dayOfMonth: 1,
-                                },
-                              })
-                            }
-                            className="w-4 h-4 text-indigo-600"
-                          />
-                          <span className="text-sm">Daily</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taskType"
-                            value="weekly"
-                            checked={formData.taskType === "weekly"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taskType: e.target.value,
-                                isRecurring: true,
-                                recurrencePattern: {
-                                  frequency: "weekly",
-                                  interval: 1,
-                                  daysOfWeek: [],
-                                  dayOfMonth: 1,
-                                },
-                              })
-                            }
-                            className="w-4 h-4 text-indigo-600"
-                          />
-                          <span className="text-sm">Weekly</span>
-                        </label>
-                        <label className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            name="taskType"
-                            value="monthly"
-                            checked={formData.taskType === "monthly"}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                taskType: e.target.value,
-                                isRecurring: true,
-                                recurrencePattern: {
-                                  frequency: "monthly",
-                                  interval: 1,
-                                  daysOfWeek: [],
-                                  dayOfMonth: 1,
-                                },
-                              })
-                            }
-                            className="w-4 h-4 text-indigo-600"
-                          />
-                          <span className="text-sm">Monthly</span>
-                        </label>
+                      <div className="flex gap-4 flex-wrap">
+                        {["One-time", "daily", "weekly", "monthly"].map((type) => (
+                          <label key={type} className="flex items-center space-x-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              name="taskType"
+                              value={type}
+                              checked={formData.taskType === type}
+                              onChange={(e) =>
+                                setFormData({
+                                  ...formData,
+                                  taskType: e.target.value,
+                                  isRecurring: type !== "One-time",
+                                  recurrencePattern: type !== "One-time"
+                                    ? {
+                                        frequency: type,
+                                        interval: 1,
+                                        daysOfWeek: [],
+                                        dayOfMonth: 1,
+                                      }
+                                    : formData.recurrencePattern,
+                                })
+                              }
+                              className="w-4 h-4 text-[#00FF88] accent-[#00FF88]"
+                            />
+                            <span className="text-sm text-white/80">{type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                          </label>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -757,11 +685,11 @@ export default function TasksPage() {
                     <Button
                       type="submit"
                       disabled={isSubmitting}
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-neon"
                     >
                       {isSubmitting ? (
                         <>
-                          <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                          <div className="w-4 h-4 border-2 border-[#0B1220]/30 border-t-[#0B1220] rounded-full animate-spin mr-2" />
                           Creating...
                         </>
                       ) : (
@@ -773,7 +701,7 @@ export default function TasksPage() {
                       variant="outline"
                       onClick={() => setActiveTab("view")}
                       disabled={isSubmitting}
-                      className="rounded-xl h-11 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="rounded-xl h-11 border-white/[0.12] text-white/70 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       Cancel
                     </Button>
@@ -787,14 +715,14 @@ export default function TasksPage() {
 
       {/* Edit Task Modal */}
       {editingTask && (
-        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/70 z-50 overflow-y-auto backdrop-blur-sm">
           <div className="min-h-screen flex items-center justify-center p-4">
-            <Card className="w-full max-w-2xl rounded-2xl">
-              <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-2xl">
+            <Card className="w-full max-w-2xl rounded-2xl border-white/[0.08]">
+              <CardHeader className="bg-gradient-to-r from-[#00D4FF] to-[#0099CC] text-white rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-white">Edit Task</CardTitle>
-                    <CardDescription className="text-white">
+                    <CardDescription className="text-white/70">
                       Update task details
                     </CardDescription>
                   </div>
@@ -810,7 +738,7 @@ export default function TasksPage() {
               <CardContent className="pt-6">
                 <form onSubmit={handleEditSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="edit-title" className="font-semibold">
+                    <Label htmlFor="edit-title" className="font-medium text-white/80">
                       Task Title *
                     </Label>
                     <Input
@@ -824,12 +752,12 @@ export default function TasksPage() {
                       }
                       placeholder="Enter task title"
                       required
-                      className="mt-2 h-11 rounded-xl"
+                      className="mt-2 h-11 rounded-xl bg-white/[0.05] border-white/[0.1] text-white"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-description" className="font-semibold">
+                    <Label htmlFor="edit-description" className="font-medium text-white/80">
                       Description
                     </Label>
                     <textarea
@@ -842,13 +770,13 @@ export default function TasksPage() {
                         })
                       }
                       placeholder="Enter task description"
-                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="mt-2 w-full px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                       rows="3"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-priority" className="font-semibold">
+                    <Label htmlFor="edit-priority" className="font-medium text-white/80">
                       Priority *
                     </Label>
                     <select
@@ -860,7 +788,7 @@ export default function TasksPage() {
                           priority: e.target.value,
                         })
                       }
-                      className="mt-2 w-full px-4 py-2 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="mt-2 w-full px-4 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                     >
                       <option value="Low">Low</option>
                       <option value="Medium">Medium</option>
@@ -870,7 +798,7 @@ export default function TasksPage() {
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-deadline" className="font-semibold">
+                    <Label htmlFor="edit-deadline" className="font-medium text-white/80">
                       Deadline *
                     </Label>
                     <Input
@@ -884,19 +812,19 @@ export default function TasksPage() {
                         })
                       }
                       required
-                      className="mt-2 h-11 rounded-xl"
+                      className="mt-2 h-11 rounded-xl bg-white/[0.05] border-white/[0.1] text-white"
                     />
                   </div>
 
                   <div>
-                    <Label htmlFor="edit-assignedTo" className="font-semibold">
+                    <Label htmlFor="edit-assignedTo" className="font-medium text-white/80">
                       Assign To *
                     </Label>
-                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-slate-300 rounded-xl p-3">
+                    <div className="mt-2 space-y-2 max-h-40 overflow-y-auto border border-white/[0.1] bg-white/[0.03] rounded-xl p-3">
                       {users.map((u) => (
                         <label
                           key={u._id}
-                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-slate-50 rounded-lg"
+                          className="flex items-center space-x-3 cursor-pointer p-2 hover:bg-white/[0.05] rounded-lg"
                         >
                           <input
                             type="checkbox"
@@ -919,10 +847,10 @@ export default function TasksPage() {
                                 });
                               }
                             }}
-                            className="rounded border-slate-300 w-4 h-4"
+                            className="rounded border-white/30 bg-white/10 w-4 h-4 accent-[#00FF88]"
                           />
-                          <span className="text-sm font-medium">{u.name}</span>
-                          <span className="text-xs text-slate-500 ml-auto">
+                          <span className="text-sm font-medium text-white/85">{u.name}</span>
+                          <span className="text-xs text-white/40 ml-auto">
                             {u.role}
                           </span>
                         </label>
@@ -933,7 +861,7 @@ export default function TasksPage() {
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <Button
                       type="submit"
-                      className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold h-11"
+                      className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold rounded-xl h-11 hover:shadow-neon"
                     >
                       Update Task
                     </Button>
@@ -941,7 +869,7 @@ export default function TasksPage() {
                       type="button"
                       variant="outline"
                       onClick={() => setEditingTask(null)}
-                      className="rounded-xl h-11"
+                      className="rounded-xl h-11 border-white/[0.12] text-white/70 hover:text-white"
                     >
                       Cancel
                     </Button>
@@ -959,17 +887,17 @@ export default function TasksPage() {
           {loading ? (
             <div className="flex items-center justify-center min-h-[60vh]">
               <div className="text-center">
-                <div className="w-12 h-12 rounded-full border-4 border-slate-300 border-t-indigo-600 animate-spin mx-auto mb-4" />
-                <p className="text-slate-600 font-medium">Loading tasks...</p>
+                <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-[#00FF88] animate-spin mx-auto mb-4" />
+                <p className="text-white/60 font-medium">Loading tasks...</p>
               </div>
             </div>
           ) : (
             <div className="max-w-7xl mx-auto px-6 py-6">
               {/* Filter Bar */}
-              <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-2xl p-5 mb-6 shadow-lg">
+              <div className="glass-card p-5 mb-6">
                 <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
                   <div className="flex flex-wrap gap-3 items-center">
-                    <span className="text-base font-bold text-white">
+                    <span className="text-sm font-medium text-white/70">
                       Status:
                     </span>
                     <div className="flex gap-2">
@@ -983,10 +911,10 @@ export default function TasksPage() {
                         <button
                           key={status}
                           onClick={() => setTaskViewTab(status)}
-                          className={`px-4 py-2 rounded-xl text-sm font-bold transition-all shadow-md ${
+                          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                             taskViewTab === status
-                              ? "bg-white text-indigo-600 transform scale-105"
-                              : "bg-white/20 text-white hover:bg-white/30"
+                              ? "bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold shadow-neon"
+                              : "bg-white/[0.05] text-white/60 hover:bg-white/[0.1] hover:text-white/90"
                           }`}
                         >
                           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -996,13 +924,13 @@ export default function TasksPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-3 items-center">
-                    <span className="text-base font-bold text-white">
+                    <span className="text-sm font-medium text-white/70">
                       Period:
                     </span>
                     <select
                       value={dateFilter}
                       onChange={(e) => setDateFilter(e.target.value)}
-                      className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-600 border-0 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
+                      className="px-4 py-2 rounded-xl text-sm font-medium bg-white/[0.08] text-white border border-white/[0.1] focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                     >
                       <option value="all">All Time</option>
                       <option value="today">Today</option>
@@ -1014,13 +942,13 @@ export default function TasksPage() {
 
                   {canAssignTasks && (
                     <div className="flex flex-wrap gap-3 items-center">
-                      <span className="text-base font-bold text-white">
+                      <span className="text-sm font-medium text-white/70">
                         User:
                       </span>
                       <select
                         value={userFilter}
                         onChange={(e) => setUserFilter(e.target.value)}
-                        className="px-4 py-2 rounded-xl text-sm font-bold bg-white text-indigo-600 border-0 focus:outline-none focus:ring-2 focus:ring-white shadow-md"
+                        className="px-4 py-2 rounded-xl text-sm font-medium bg-white/[0.08] text-white border border-white/[0.1] focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                       >
                         <option value="">All Users</option>
                         {users.map((u) => (
@@ -1035,27 +963,27 @@ export default function TasksPage() {
 
                 {/* Custom Date Range */}
                 {dateFilter === "custom" && (
-                  <div className="flex gap-4 mt-4 pt-4 border-t border-white/20">
+                  <div className="flex gap-4 mt-4 pt-4 border-t border-white/[0.08]">
                     <div className="flex-1">
-                      <label className="text-xs font-bold text-white mb-1 block">
+                      <label className="text-xs font-medium text-white/60 mb-1 block">
                         Start Date
                       </label>
                       <input
                         type="date"
                         value={startDate}
                         onChange={(e) => setStartDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm bg-white text-slate-700 border-0 focus:outline-none focus:ring-2 focus:ring-white"
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white/[0.08] text-white border border-white/[0.1] focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                       />
                     </div>
                     <div className="flex-1">
-                      <label className="text-xs font-bold text-white mb-1 block">
+                      <label className="text-xs font-medium text-white/60 mb-1 block">
                         End Date
                       </label>
                       <input
                         type="date"
                         value={endDate}
                         onChange={(e) => setEndDate(e.target.value)}
-                        className="w-full px-3 py-2 rounded-lg text-sm bg-white text-slate-700 border-0 focus:outline-none focus:ring-2 focus:ring-white"
+                        className="w-full px-3 py-2 rounded-lg text-sm bg-white/[0.08] text-white border border-white/[0.1] focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                       />
                     </div>
                   </div>
@@ -1063,30 +991,30 @@ export default function TasksPage() {
               </div>
 
               {/* Tasks Table */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="glass-card overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-gradient-to-r from-indigo-50 to-blue-50 border-b border-slate-200">
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      <tr className="bg-white/[0.02] border-b border-white/[0.06]">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Task
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Status
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Priority
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Assigned To
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Deadline
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Type
                         </th>
-                        <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                        <th className="px-4 py-3 text-left text-xs font-semibold text-white/40 uppercase tracking-wider">
                           Actions
                         </th>
                       </tr>
@@ -1096,12 +1024,10 @@ export default function TasksPage() {
                         <tr>
                           <td colSpan="7" className="px-4 py-12 text-center">
                             <div className="flex flex-col items-center gap-3">
-                              <img
-                                src="/nodata.gif"
-                                alt="No data"
-                                className="w-32 h-32 object-contain"
-                              />
-                              <p className="text-slate-500 font-medium">
+                              <div className="w-16 h-16 rounded-2xl bg-white/[0.05] flex items-center justify-center">
+                                <CheckCircle2 size={28} className="text-white/20" />
+                              </div>
+                              <p className="text-white/50 font-medium">
                                 No tasks found
                               </p>
                             </div>
@@ -1121,14 +1047,14 @@ export default function TasksPage() {
                           const statusColor =
                             {
                               Completed:
-                                "bg-emerald-100 text-emerald-800 border-emerald-300",
+                                "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
                               "In Progress":
-                                "bg-blue-100 text-blue-800 border-blue-300",
+                                "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
                               Pending:
-                                "bg-amber-100 text-amber-800 border-amber-300",
-                              Overdue: "bg-red-100 text-red-800 border-red-300",
+                                "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+                              Overdue: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
                             }[status] ||
-                            "bg-slate-100 text-slate-800 border-slate-300";
+                            "bg-white/10 text-white/60 border-white/10";
 
                           const rowBgColor = getRowBackgroundColor(
                             task.status,
@@ -1139,7 +1065,7 @@ export default function TasksPage() {
                             <>
                               <tr
                                 key={task._id}
-                                className={`${rowBgColor} border-b border-slate-100 hover:opacity-80 transition-opacity ${canAssignTasks && task.status === "Completed" ? "cursor-pointer" : ""}`}
+                                className={`${rowBgColor} border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors ${canAssignTasks && task.status === "Completed" ? "cursor-pointer" : ""}`}
                                 onClick={() =>
                                   canAssignTasks &&
                                   task.status === "Completed" &&
@@ -1150,11 +1076,11 @@ export default function TasksPage() {
                               >
                                 <td className="px-4 py-3 max-w-xs">
                                   <div>
-                                    <p className="font-semibold text-slate-800 text-sm truncate">
+                                    <p className="font-medium text-white/85 text-sm truncate">
                                       {task.title}
                                     </p>
                                     {task.description && (
-                                      <p className="text-xs text-slate-500 mt-0.5 line-clamp-2 truncate">
+                                      <p className="text-xs text-white/40 mt-0.5 line-clamp-2 truncate">
                                         {task.description}
                                       </p>
                                     )}
@@ -1162,14 +1088,14 @@ export default function TasksPage() {
                                 </td>
                                 <td className="px-4 py-3">
                                   <span
-                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${statusColor}`}
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${statusColor}`}
                                   >
                                     {status}
                                   </span>
                                 </td>
                                 <td className="px-4 py-3">
                                   <span
-                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}
+                                    className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getPriorityColor(task.priority)}`}
                                   >
                                     {task.priority}
                                   </span>
@@ -1184,27 +1110,27 @@ export default function TasksPage() {
                                           .map((user, idx) => (
                                             <span
                                               key={idx}
-                                              className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
+                                              className="text-xs font-medium text-[#00D4FF] bg-[#00D4FF]/10 px-2 py-1 rounded-md border border-[#00D4FF]/20"
                                               title={user.name || user}
                                             >
                                               {user.name || "User"}
                                             </span>
                                           ))}
                                         {task.assignedTo.length > 3 && (
-                                          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                                          <span className="text-xs font-medium text-white/50 bg-white/[0.05] px-2 py-1 rounded-md border border-white/[0.06]">
                                             +{task.assignedTo.length - 3} more
                                           </span>
                                         )}
                                       </div>
                                     ) : (
-                                      <span className="text-xs text-slate-400">
+                                      <span className="text-xs text-white/30">
                                         Unassigned
                                       </span>
                                     )}
                                   </div>
                                 </td>
                                 <td className="px-4 py-3">
-                                  <span className="text-xs text-slate-600">
+                                  <span className="text-xs text-white/50">
                                     {task.deadline
                                       ? new Date(
                                           task.deadline,
@@ -1218,7 +1144,7 @@ export default function TasksPage() {
                                 </td>
                                 <td className="px-4 py-3">
                                   <span
-                                    className={`text-xs font-medium ${task.isRecurring ? "text-purple-600 bg-purple-50 px-2 py-1 rounded" : "text-slate-500"}`}
+                                    className={`text-xs font-medium ${task.isRecurring ? "text-[#B366FF] bg-[#B366FF]/10 px-2 py-1 rounded-md border border-[#B366FF]/20" : "text-white/40"}`}
                                   >
                                     {task.taskType || "One-time"}
                                   </span>
@@ -1230,7 +1156,7 @@ export default function TasksPage() {
                                       task.status !== "Completed" && (
                                         <button
                                           onClick={() => handleEdit(task)}
-                                          className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                          className="p-1.5 text-[#00D4FF] hover:bg-[#00D4FF]/10 rounded-md transition-colors"
                                           title="Edit task"
                                         >
                                           <svg
@@ -1251,7 +1177,7 @@ export default function TasksPage() {
                                     {task.status !== "Completed" && (
                                       <button
                                         onClick={() => handleComplete(task._id)}
-                                        className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                        className="p-1.5 text-[#00FF88] hover:bg-[#00FF88]/10 rounded-md transition-colors"
                                         title="Mark as complete"
                                       >
                                         <CheckCircle2 className="w-4 h-4" />
@@ -1259,7 +1185,7 @@ export default function TasksPage() {
                                     )}
                                     <button
                                       onClick={() => handleDelete(task._id)}
-                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                      className="p-1.5 text-[#FF6B6B] hover:bg-[#FF6B6B]/10 rounded-md transition-colors"
                                       title="Delete task"
                                     >
                                       <Trash2 className="w-4 h-4" />
@@ -1268,12 +1194,12 @@ export default function TasksPage() {
                                 </td>
                               </tr>
                               {showCompleteInput === task._id && (
-                                <tr className="bg-emerald-50">
+                                <tr className="bg-[#00FF88]/5">
                                   <td colSpan="7" className="px-4 py-4">
                                     <div className="flex items-center gap-3">
-                                      <label className="text-sm font-medium text-slate-700">
+                                      <label className="text-sm font-medium text-white/80">
                                         Completion Proof{" "}
-                                        <span className="text-red-500">*</span>
+                                        <span className="text-[#FF6B6B]">*</span>
                                       </label>
                                       <input
                                         type="text"
@@ -1282,7 +1208,7 @@ export default function TasksPage() {
                                           setCompletionProof(e.target.value)
                                         }
                                         placeholder="Enter proof (URL, description...)"
-                                        className="flex-1 max-w-md px-3 py-2 text-sm border border-slate-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                        className="flex-1 max-w-md px-3 py-2 text-sm bg-white/[0.08] border border-white/[0.1] rounded-lg text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30"
                                         autoFocus
                                         onKeyDown={(e) => {
                                           if (e.key === "Enter") {
@@ -1297,7 +1223,7 @@ export default function TasksPage() {
                                         onClick={() =>
                                           handleCompleteSubmit(task._id)
                                         }
-                                        className="px-4 py-2 text-sm bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                                        className="btn-primary px-4 py-2 text-sm"
                                       >
                                         Submit
                                       </button>
@@ -1306,7 +1232,7 @@ export default function TasksPage() {
                                           setShowCompleteInput(null);
                                           setCompletionProof("");
                                         }}
-                                        className="px-4 py-2 text-sm bg-slate-200 text-slate-600 rounded hover:bg-slate-300"
+                                        className="btn-outline px-4 py-2 text-sm"
                                       >
                                         Cancel
                                       </button>
@@ -1317,17 +1243,17 @@ export default function TasksPage() {
                               {expandedTask === task._id &&
                                 canAssignTasks &&
                                 task.status === "Completed" && (
-                                  <tr className="bg-blue-50">
+                                  <tr className="bg-white/[0.02]">
                                     <td colSpan="7" className="px-4 py-4">
                                       <div className="space-y-3">
-                                        <h4 className="text-sm font-bold text-slate-800">
+                                        <h4 className="text-sm font-semibold text-white">
                                           Completion Details
                                         </h4>
-                                        <div className="bg-white rounded-lg p-4 border border-slate-200">
-                                          <p className="text-xs font-semibold text-slate-600 mb-2">
+                                        <div className="bg-white/[0.05] rounded-lg p-4 border border-white/[0.08]">
+                                          <p className="text-xs font-medium text-white/50 mb-2">
                                             Completion Proof:
                                           </p>
-                                          <p className="text-sm text-slate-700">
+                                          <p className="text-sm text-white/70">
                                             {(task.history &&
                                               task.history.find(
                                                 (h) => h.status === "Completed",
@@ -1338,7 +1264,7 @@ export default function TasksPage() {
                                             task.history.find(
                                               (h) => h.status === "Completed",
                                             )?.changedAt && (
-                                              <p className="text-xs text-slate-500 mt-2">
+                                              <p className="text-xs text-white/40 mt-2">
                                                 Completed on:{" "}
                                                 {new Date(
                                                   task.history.find(

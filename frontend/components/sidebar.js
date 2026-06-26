@@ -83,30 +83,26 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
   return (
     <>
-      {/* Sidebar */}
       <aside
-        className={`fixed md:relative z-30 h-full w-64 border-r border-indigo-200 transition-transform duration-200 transform bg-gradient-to-b from-indigo-50 to-purple-50 ${
+        className={`fixed md:relative z-30 h-full w-64 transition-transform duration-300 bg-[#0A0F1A] border-r border-white/[0.06] ${
           isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
         <div className="flex flex-col h-full p-4 pt-16 md:pt-4">
-          {/* Logo */}
           <div className="mb-8 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-600 shadow-lg">
-              <span className="font-bold text-white text-lg">D</span>
+            <div className="h-10 w-10 rounded-xl flex items-center justify-center bg-gradient-to-br from-[#00FF88] to-[#00CC70] shadow-lg shadow-[#00FF88]/20">
+              <span className="font-bold text-[#0B1220] text-lg">D</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">Delegation</h1>
-              <p className="text-xs text-slate-600">{user?.role || "User"}</p>
+              <h1 className="text-lg font-semibold text-white">Delegation</h1>
+              <p className="text-xs text-white/40">{user?.role || "User"}</p>
             </div>
           </div>
 
-          {/* Section label */}
-          <p className="text-[10px] uppercase tracking-widest mb-3 ml-2 font-bold text-indigo-600">
+          <p className="text-[10px] uppercase tracking-widest mb-3 ml-2 font-semibold text-white/30">
             Navigation
           </p>
 
-          {/* Nav */}
           <nav className="flex-1 space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -117,11 +113,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     onClick={() => setIsOpen(false)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-medium ${
                       isActive
-                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
-                        : "text-slate-700 hover:bg-indigo-100"
+                        ? "bg-white/[0.08] text-[#00FF88] shadow-[inset_3px_0_0_#00FF88]"
+                        : "text-white/50 hover:text-white/80 hover:bg-white/[0.04]"
                     }`}
                   >
-                    <Icon className="h-5 w-5 flex-shrink-0" />
+                    <Icon className={`h-5 w-5 flex-shrink-0 ${isActive ? "text-[#00FF88]" : ""}`} />
                     {item.title}
                   </button>
                 </Link>
@@ -129,25 +125,23 @@ export default function Sidebar({ isOpen, setIsOpen }) {
             })}
           </nav>
 
-          {/* AI Assistant */}
-          <div className="border-t border-indigo-200 pt-4 mt-4">
+          <div className="border-t border-white/[0.06] pt-4 mt-4">
             <a
               href="https://deepsikha-ai.vercel.app/ai-assistant"
               target="_blank"
               rel="noopener noreferrer"
             >
-              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-700 hover:from-purple-200 hover:to-indigo-200 transition-all duration-200 font-semibold">
-                <Sparkles className="h-5 w-5" />
+              <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white transition-all duration-200 font-medium border border-white/[0.06]">
+                <Sparkles className="h-5 w-5 text-[#B366FF]" />
                 AI Assistant
               </button>
             </a>
           </div>
 
-          {/* Logout */}
-          <div className="border-t border-indigo-200 pt-4">
+          <div className="border-t border-white/[0.06] pt-4">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-red-100 text-red-700 hover:bg-red-200 transition-all duration-200 font-semibold"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-[#FF6B6B]/10 text-[#FF6B6B] hover:bg-[#FF6B6B]/20 transition-all duration-200 font-medium"
             >
               <LogOut className="h-5 w-5" />
               Logout
@@ -156,10 +150,9 @@ export default function Sidebar({ isOpen, setIsOpen }) {
         </div>
       </aside>
 
-      {/* Mobile Overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 z-20 bg-black/50 md:hidden"
+          className="fixed inset-0 z-20 bg-black/60 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}

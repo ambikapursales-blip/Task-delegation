@@ -24,108 +24,99 @@ import Chart from "chart.js/auto";
 
 /* ─── Design Tokens ─────────────────────────────────────────────── */
 const T = {
-  // Purple theme from sidebar
-  primary: "#7C3AED",
-  primaryDark: "#6D28D9",
-  primaryLight: "#8B5CF6",
-  primaryGradStart: "#7C3AED",
-  primaryGradEnd: "#5B21B6",
-  primaryBg: "#EDE9FE",
-  primaryBorder: "#C4B5FD",
+  primary: "#00FF88",
+  primaryDark: "#00CC70",
+  primaryLight: "#33FFA3",
+  primaryGradStart: "#00FF88",
+  primaryGradEnd: "#00CC70",
+  primaryBg: "rgba(0,255,136,0.1)",
+  primaryBorder: "rgba(0,255,136,0.25)",
 
-  // Page background - light lavender/blue-gray
-  pageBg: "#F0F0F7",
-  surface: "#FFFFFF",
-  surfaceAlt: "#F8F7FF",
+  pageBg: "#0B1220",
+  surface: "rgba(255,255,255,0.04)",
+  surfaceAlt: "rgba(255,255,255,0.02)",
 
-  // Text
-  ink1: "#1E1B4B",
-  ink2: "#3730A3",
-  ink3: "#6B7280",
-  ink4: "#9CA3AF",
+  ink1: "#FFFFFF",
+  ink2: "rgba(255,255,255,0.85)",
+  ink3: "rgba(255,255,255,0.5)",
+  ink4: "rgba(255,255,255,0.35)",
 
-  // Status colors
-  emerald: "#059669",
-  emeraldLight: "#D1FAE5",
-  emeraldBorder: "#6EE7B7",
+  emerald: "#00FF88",
+  emeraldLight: "rgba(0,255,136,0.12)",
+  emeraldBorder: "rgba(0,255,136,0.25)",
 
-  amber: "#D97706",
-  amberLight: "#FEF3C7",
-  amberBorder: "#FCD34D",
+  amber: "#FFB84D",
+  amberLight: "rgba(255,184,77,0.12)",
+  amberBorder: "rgba(255,184,77,0.25)",
 
-  rose: "#DC2626",
-  roseLight: "#FEE2E2",
-  roseBorder: "#FCA5A5",
+  rose: "#FF6B6B",
+  roseLight: "rgba(255,107,107,0.12)",
+  roseBorder: "rgba(255,107,107,0.25)",
 
-  blue: "#2563EB",
-  blueLight: "#DBEAFE",
-  blueBorder: "#93C5FD",
+  blue: "#00D4FF",
+  blueLight: "rgba(0,212,255,0.12)",
+  blueBorder: "rgba(0,212,255,0.25)",
 
-  // Borders
-  border1: "#E5E7EB",
-  border2: "#D1D5DB",
+  border1: "rgba(255,255,255,0.08)",
+  border2: "rgba(255,255,255,0.12)",
 };
 
 /* ─── Stat Card ─────────────────────────────────────────────────── */
 function StatCard({ title, value, icon, trend, trendUp, accent, href }) {
   const variants = {
     purple: {
-      gradient: "from-[#7C3AED] to-[#5B21B6]",
-      iconBg: "bg-white/20",
-      trendBg: "bg-white/20 text-white",
-      textColor: "text-white",
-      border: "border-[#7C3AED]/20",
+      gradient: "from-[#00FF88]/20 to-[#00CC70]/10",
+      iconBg: "bg-[#00FF88]/20 text-[#0B1220]",
+      trendBg: "bg-white/10 text-white",
+      textColor: "text-[#00FF88]",
+      border: "border-[#00FF88]/20",
     },
     emerald: {
-      gradient: "from-[#059669] to-[#047857]",
-      iconBg: "bg-white/20",
-      trendBg: "bg-white/20 text-white",
-      textColor: "text-white",
-      border: "border-[#059669]/20",
+      gradient: "from-[#00FF88]/20 to-[#00CC70]/10",
+      iconBg: "bg-[#00FF88]/20 text-[#0B1220]",
+      trendBg: "bg-white/10 text-white",
+      textColor: "text-[#00FF88]",
+      border: "border-[#00FF88]/20",
     },
     amber: {
-      gradient: "from-[#D97706] to-[#B45309]",
-      iconBg: "bg-white/20",
-      trendBg: "bg-white/20 text-white",
-      textColor: "text-white",
-      border: "border-[#D97706]/20",
+      gradient: "from-[#FFB84D]/20 to-[#FF9500]/10",
+      iconBg: "bg-[#FFB84D]/20 text-[#0B1220]",
+      trendBg: "bg-white/10 text-white",
+      textColor: "text-[#FFB84D]",
+      border: "border-[#FFB84D]/20",
     },
     blue: {
-      gradient: "from-[#2563EB] to-[#1D4ED8]",
-      iconBg: "bg-white/20",
-      trendBg: "bg-white/20 text-white",
-      textColor: "text-white",
-      border: "border-[#2563EB]/20",
+      gradient: "from-[#00D4FF]/20 to-[#0099CC]/10",
+      iconBg: "bg-[#00D4FF]/20 text-[#0B1220]",
+      trendBg: "bg-white/10 text-white",
+      textColor: "text-[#00D4FF]",
+      border: "border-[#00D4FF]/20",
     },
   };
   const v = variants[accent] || variants.purple;
 
   const cardContent = (
     <div
-      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${v.gradient} p-5 shadow-lg ${href ? "hover:-translate-y-1 cursor-pointer" : "cursor-default"} transition-all duration-200`}
+      className={`relative overflow-hidden rounded-2xl bg-gradient-to-br ${v.gradient} backdrop-blur-xl border border-white/[0.06] p-5 shadow-glass-sm ${href ? "hover:-translate-y-1 cursor-pointer hover:shadow-glass" : "cursor-default"} transition-all duration-300`}
     >
-      {/* Background decoration */}
-      <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
-      <div className="absolute -bottom-6 -left-2 w-16 h-16 rounded-full bg-white/5 pointer-events-none" />
+      <div className="absolute -top-4 -right-4 w-24 h-24 rounded-full bg-white/[0.03] pointer-events-none" />
+      <div className="absolute -bottom-6 -left-2 w-16 h-16 rounded-full bg-white/[0.02] pointer-events-none" />
 
       <div className="relative flex justify-between items-start">
         <div className="flex-1">
-          <p className="text-[11px] font-bold tracking-widest uppercase text-white/70 mb-2">
+          <p className="text-[11px] font-semibold tracking-widest uppercase text-white/50 mb-2">
             {title}
           </p>
-          <p
-            className="text-4xl font-bold text-white mb-3 leading-none"
-            style={{ fontFamily: "'DM Sans', sans-serif" }}
-          >
+          <p className="text-4xl font-bold text-white mb-3 leading-none">
             {value}
           </p>
           <span
-            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${v.trendBg}`}
+            className={`text-xs font-medium px-2.5 py-1 rounded-full ${v.trendBg}`}
           >
             {trendUp ? "↑" : "→"} {trend}
           </span>
         </div>
-        <div className={`p-3 rounded-xl ${v.iconBg} text-white`}>{icon}</div>
+        <div className={`p-3 rounded-xl ${v.iconBg} shadow-lg`}>{icon}</div>
       </div>
     </div>
   );
@@ -141,7 +132,7 @@ function StatCard({ title, value, icon, trend, trendUp, accent, href }) {
 function Card({ children, className = "" }) {
   return (
     <div
-      className={`bg-white border border-[#E5E7EB] rounded-2xl shadow-sm ${className}`}
+      className={`bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm ${className}`}
     >
       {children}
     </div>
@@ -151,11 +142,11 @@ function Card({ children, className = "" }) {
 /* ─── Card Header ────────────────────────────────────────────────── */
 function CardHeader({ title, subtitle, action }) {
   return (
-    <div className="flex items-center justify-between px-6 py-4 border-b border-[#F3F4F6]">
+    <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
       <div>
-        <h3 className="text-sm font-bold text-[#1E1B4B]">{title}</h3>
+        <h3 className="text-sm font-semibold text-white">{title}</h3>
         {subtitle && (
-          <p className="text-xs text-[#9CA3AF] mt-0.5">{subtitle}</p>
+          <p className="text-xs text-white/40 mt-0.5">{subtitle}</p>
         )}
       </div>
       {action}
@@ -166,14 +157,14 @@ function CardHeader({ title, subtitle, action }) {
 /* ─── Status Badge ────────────────────────────────────────────────── */
 function StatusBadge({ status }) {
   const map = {
-    Completed: "bg-emerald-100 text-emerald-700 border-emerald-200",
-    "In Progress": "bg-blue-100 text-blue-700 border-blue-200",
-    Pending: "bg-amber-100 text-amber-700 border-amber-200",
-    Overdue: "bg-red-100 text-red-700 border-red-200",
+    Completed: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
+    "In Progress": "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
+    Pending: "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+    Overdue: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
   };
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${map[status] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${map[status] || "bg-white/10 text-white/60 border-white/10"}`}
     >
       {status}
     </span>
@@ -183,14 +174,14 @@ function StatusBadge({ status }) {
 /* ─── Priority Badge ─────────────────────────────────────────────── */
 function PriorityBadge({ priority }) {
   const map = {
-    Critical: "bg-red-100 text-red-700 border-red-200",
-    High: "bg-orange-100 text-orange-700 border-orange-200",
-    Medium: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    Low: "bg-green-100 text-green-700 border-green-200",
+    Critical: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
+    High: "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+    Medium: "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
+    Low: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
   };
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border ${map[priority] || "bg-gray-100 text-gray-700 border-gray-200"}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${map[priority] || "bg-white/10 text-white/60 border-white/10"}`}
     >
       {priority}
     </span>
@@ -345,13 +336,13 @@ export default function DashboardPage() {
   ]);
 
   const initializeCharts = () => {
-    const font = { family: "'DM Sans', sans-serif", size: 12 };
+    const font = { family: "Inter, system-ui, sans-serif", size: 12 };
     const tooltipDefaults = {
-      backgroundColor: "#1E1B4B",
+      backgroundColor: "#0F1A2E",
       padding: 12,
       titleColor: "#FFFFFF",
-      bodyColor: "#C4B5FD",
-      borderColor: "#7C3AED",
+      bodyColor: "rgba(255,255,255,0.7)",
+      borderColor: "rgba(0,255,136,0.3)",
       borderWidth: 1,
       cornerRadius: 10,
     };
@@ -370,8 +361,8 @@ export default function DashboardPage() {
                 analytics?.tasks?.pending || 0,
                 analytics?.tasks?.inProgress || 0,
               ],
-              backgroundColor: ["#7C3AED", "#D97706", "#2563EB"],
-              borderColor: "#FFFFFF",
+              backgroundColor: ["#00FF88", "#FFB84D", "#00D4FF"],
+              borderColor: "#0B1220",
               borderWidth: 4,
               hoverOffset: 6,
             },
@@ -414,12 +405,12 @@ export default function DashboardPage() {
 
       // Create gradient
       const gradPurple = ctx.createLinearGradient(0, 0, 0, 300);
-      gradPurple.addColorStop(0, "rgba(124,58,237,0.2)");
-      gradPurple.addColorStop(1, "rgba(124,58,237,0)");
+      gradPurple.addColorStop(0, "rgba(0,255,136,0.2)");
+      gradPurple.addColorStop(1, "rgba(0,255,136,0)");
 
       const gradBlue = ctx.createLinearGradient(0, 0, 0, 300);
-      gradBlue.addColorStop(0, "rgba(37,99,235,0.15)");
-      gradBlue.addColorStop(1, "rgba(37,99,235,0)");
+      gradBlue.addColorStop(0, "rgba(0,212,255,0.15)");
+      gradBlue.addColorStop(1, "rgba(0,212,255,0)");
 
       chartInstances.current.taskTrend = new Chart(ctx, {
         type: "line",
@@ -429,27 +420,27 @@ export default function DashboardPage() {
             {
               label: "Completed",
               data: trendData.map((t) => t.completed),
-              borderColor: "#7C3AED",
+              borderColor: "#00FF88",
               backgroundColor: gradPurple,
               borderWidth: 2.5,
               tension: 0.4,
               fill: true,
               pointRadius: 4,
-              pointBackgroundColor: "#7C3AED",
-              pointBorderColor: "#FFFFFF",
+              pointBackgroundColor: "#00FF88",
+              pointBorderColor: "#0B1220",
               pointBorderWidth: 2,
             },
             {
               label: "New Tasks",
               data: trendData.map((t) => t.created),
-              borderColor: "#2563EB",
+              borderColor: "#00D4FF",
               backgroundColor: gradBlue,
               borderWidth: 2.5,
               tension: 0.4,
               fill: true,
               pointRadius: 4,
-              pointBackgroundColor: "#2563EB",
-              pointBorderColor: "#FFFFFF",
+              pointBackgroundColor: "#00D4FF",
+              pointBorderColor: "#0B1220",
               pointBorderWidth: 2,
             },
           ],
@@ -471,17 +462,17 @@ export default function DashboardPage() {
             tooltip: { ...tooltipDefaults, mode: "index", intersect: false },
           },
           scales: {
-            y: {
-              beginAtZero: true,
-              grid: { color: "rgba(124,58,237,0.06)" },
-              ticks: { color: "#9CA3AF", font },
-              border: { display: false },
-            },
-            x: {
-              grid: { display: false },
-              ticks: { color: "#9CA3AF", font },
-              border: { display: false },
-            },
+                  y: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(255,255,255,0.05)" },
+                    ticks: { color: "rgba(255,255,255,0.4)", font },
+                    border: { display: false },
+                  },
+                  x: {
+                    grid: { display: false },
+                    ticks: { color: "rgba(255,255,255,0.4)", font },
+                    border: { display: false },
+                  },
           },
         },
       });
@@ -503,11 +494,11 @@ export default function DashboardPage() {
               label: "Tasks",
               data: deptData.map((d) => d.value),
               backgroundColor: [
-                "#7C3AED",
-                "#2563EB",
-                "#059669",
-                "#D97706",
-                "#8B5CF6",
+                "#00FF88",
+                "#00D4FF",
+                "#B366FF",
+                "#FFB84D",
+                "#FF6B6B",
               ],
               borderRadius: 8,
               borderSkipped: false,
@@ -520,17 +511,17 @@ export default function DashboardPage() {
           maintainAspectRatio: false,
           plugins: { legend: { display: false }, tooltip: tooltipDefaults },
           scales: {
-            x: {
-              beginAtZero: true,
-              grid: { color: "rgba(124,58,237,0.06)" },
-              ticks: { color: "#9CA3AF", font },
-              border: { display: false },
-            },
-            y: {
-              grid: { display: false },
-              ticks: { color: "#374151", font: { ...font, weight: "600" } },
-              border: { display: false },
-            },
+                  x: {
+                    beginAtZero: true,
+                    grid: { color: "rgba(255,255,255,0.05)" },
+                    ticks: { color: "rgba(255,255,255,0.4)", font },
+                    border: { display: false },
+                  },
+                  y: {
+                    grid: { display: false },
+                    ticks: { color: "rgba(255,255,255,0.6)", font: { ...font, weight: "500" } },
+                    border: { display: false },
+                  },
           },
         },
       });
@@ -543,17 +534,17 @@ export default function DashboardPage() {
       l.id = "dash-fonts";
       l.rel = "stylesheet";
       l.href =
-        "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap";
+        "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap";
       document.head.appendChild(l);
     }
   }, []);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#F0F0F7] flex items-center justify-center">
+      <div className="min-h-screen bg-[#0B1220] flex items-center justify-center">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-[#7C3AED] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-sm font-semibold text-[#6B7280]">
+          <div className="w-12 h-12 border-4 border-[#00FF88] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-sm font-medium text-white/60">
             Loading dashboard…
           </p>
         </div>
@@ -562,20 +553,17 @@ export default function DashboardPage() {
   }
 
   const selectClass =
-    "w-full px-3 py-2 bg-[#F8F7FF] border border-[#E5E7EB] rounded-lg text-sm text-[#1E1B4B] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-transparent transition-all";
+    "w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 focus:border-[#00FF88]/50 transition-all";
   const inputClass =
-    "w-full px-3 py-2 bg-[#F8F7FF] border border-[#E5E7EB] rounded-lg text-sm text-[#1E1B4B] focus:outline-none focus:ring-2 focus:ring-[#7C3AED] focus:border-transparent transition-all";
+    "w-full px-3 py-2 bg-white/[0.05] border border-white/[0.1] rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#00FF88]/30 focus:border-[#00FF88]/50 transition-all";
 
   return (
-    <div
-      className="min-h-screen bg-[#F0F0F7]"
-      style={{ fontFamily: "'DM Sans', sans-serif" }}
-    >
+    <div className="min-h-screen bg-[#0B1220]">
       {/* ── Top Header Bar ── */}
-      <div className="bg-white border-b border-[#E5E7EB] px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-sm">
+      <div className="bg-[#0A0F1A]/80 backdrop-blur-xl border-b border-white/[0.06] px-8 py-4 flex items-center justify-between sticky top-0 z-20 shadow-glass-sm">
         <div>
           <div className="flex items-center gap-2 mb-0.5">
-            <span className="text-xs font-bold tracking-widest uppercase text-[#7C3AED]">
+            <span className="text-xs font-semibold tracking-widest uppercase text-white/40">
               {new Date().toLocaleDateString("en-US", {
                 weekday: "long",
                 month: "long",
@@ -583,23 +571,20 @@ export default function DashboardPage() {
               })}
             </span>
           </div>
-          <h1
-            className="text-2xl font-bold text-[#1E1B4B] leading-tight"
-            style={{ fontFamily: "'DM Serif Display', serif" }}
-          >
+          <h1 className="text-2xl font-bold text-white leading-tight">
             Dashboard
           </h1>
         </div>
 
         <div className="flex items-center gap-3">
           {/* View Toggle */}
-          <div className="flex items-center bg-[#F0F0F7] rounded-xl p-1 gap-1">
+          <div className="flex items-center bg-white/[0.05] rounded-xl p-1 gap-1 border border-white/[0.06]">
             <button
               onClick={() => setViewMode("table")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                 viewMode === "table"
-                  ? "bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white shadow-md shadow-purple-200"
-                  : "text-[#9CA3AF] hover:text-[#7C3AED]"
+                  ? "bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold shadow-neon"
+                  : "text-white/50 hover:text-white/80"
               }`}
             >
               <List size={14} />
@@ -607,10 +592,10 @@ export default function DashboardPage() {
             </button>
             <button
               onClick={() => setViewMode("graphs")}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200 ${
                 viewMode === "graphs"
-                  ? "bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white shadow-md shadow-purple-200"
-                  : "text-[#9CA3AF] hover:text-[#7C3AED]"
+                  ? "bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] font-semibold shadow-neon"
+                  : "text-white/50 hover:text-white/80"
               }`}
             >
               <BarChart2 size={14} />
@@ -622,10 +607,10 @@ export default function DashboardPage() {
           {isAdminOrManager && (
             <button
               onClick={() => setShowFilters((v) => !v)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold border transition-all duration-200 ${
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium border transition-all duration-200 ${
                 showFilters
-                  ? "bg-[#EDE9FE] border-[#C4B5FD] text-[#7C3AED]"
-                  : "bg-white border-[#E5E7EB] text-[#6B7280] hover:border-[#7C3AED] hover:text-[#7C3AED]"
+                  ? "bg-[#00FF88]/10 border-[#00FF88]/25 text-[#00FF88]"
+                  : "bg-white/[0.04] border-white/[0.1] text-white/60 hover:border-[#00FF88]/30 hover:text-[#00FF88]"
               }`}
             >
               <Filter size={14} />
@@ -635,7 +620,7 @@ export default function DashboardPage() {
 
           {isAdminOrManager && (
             <Link href="/tasks">
-              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] text-white text-xs font-bold shadow-lg shadow-purple-200 hover:-translate-y-0.5 hover:shadow-purple-300 transition-all duration-200">
+              <button className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] text-xs font-bold shadow-neon hover:scale-[1.02] hover:shadow-neon-lg transition-all duration-200">
                 <Plus size={15} />
                 New Task
               </button>
@@ -643,8 +628,8 @@ export default function DashboardPage() {
           )}
 
           {/* User chip */}
-          <div className="flex items-center gap-2 pl-3 border-l border-[#E5E7EB]">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] flex items-center justify-center text-white text-xs font-bold">
+          <div className="flex items-center gap-2 pl-3 border-l border-white/[0.08]">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00FF88] to-[#00CC70] flex items-center justify-center text-[#0B1220] text-xs font-bold shadow-lg">
               {user?.name
                 ?.split(" ")
                 .map((n) => n[0])
@@ -653,10 +638,10 @@ export default function DashboardPage() {
                 .slice(0, 2)}
             </div>
             <div className="hidden md:block">
-              <p className="text-xs font-bold text-[#1E1B4B] leading-tight">
+              <p className="text-xs font-semibold text-white leading-tight">
                 {user?.name}
               </p>
-              <p className="text-[10px] text-[#9CA3AF]">{user?.role}</p>
+              <p className="text-[10px] text-white/40">{user?.role}</p>
             </div>
           </div>
         </div>
@@ -669,9 +654,9 @@ export default function DashboardPage() {
 
         {/* ── Filters Panel ── */}
         {isAdminOrManager && showFilters && (
-          <div className="mb-6 bg-white border border-[#E5E7EB] rounded-2xl p-5 shadow-sm">
+          <div className="mb-6 bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl p-5 shadow-glass-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-bold text-[#1E1B4B]">Filters</h3>
+              <h3 className="text-sm font-semibold text-white">Filters</h3>
               <button
                 onClick={() => {
                   setSelectedUser("all");
@@ -680,14 +665,14 @@ export default function DashboardPage() {
                   setStartDate("");
                   setEndDate("");
                 }}
-                className="flex items-center gap-1.5 text-xs text-[#7C3AED] font-semibold hover:underline"
+                className="flex items-center gap-1.5 text-xs text-[#00FF88] font-medium hover:underline"
               >
                 <RefreshCw size={12} /> Reset
               </button>
             </div>
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[180px]">
-                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                <label className="text-[10px] font-semibold tracking-widest uppercase text-white/40 block mb-1.5">
                   User
                 </label>
                 <select
@@ -706,7 +691,7 @@ export default function DashboardPage() {
                 </select>
               </div>
               <div className="flex-1 min-w-[160px]">
-                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                <label className="text-[10px] font-semibold tracking-widest uppercase text-white/40 block mb-1.5">
                   Period
                 </label>
                 <select
@@ -726,7 +711,7 @@ export default function DashboardPage() {
               {timePeriod === "custom" && (
                 <>
                   <div className="flex-1 min-w-[140px]">
-                    <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                    <label className="text-[10px] font-semibold tracking-widest uppercase text-white/40 block mb-1.5">
                       Start Date
                     </label>
                     <input
@@ -737,7 +722,7 @@ export default function DashboardPage() {
                     />
                   </div>
                   <div className="flex-1 min-w-[140px]">
-                    <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                    <label className="text-[10px] font-semibold tracking-widest uppercase text-white/40 block mb-1.5">
                       End Date
                     </label>
                     <input
@@ -750,7 +735,7 @@ export default function DashboardPage() {
                 </>
               )}
               <div className="flex-1 min-w-[160px]">
-                <label className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] block mb-1.5">
+                <label className="text-[10px] font-semibold tracking-widest uppercase text-white/40 block mb-1.5">
                   Status
                 </label>
                 <select
@@ -771,7 +756,7 @@ export default function DashboardPage() {
 
         {/* ── Stats Row ── */}
         <div className="mb-6">
-          <p className="text-[10px] font-bold tracking-widest uppercase text-[#9CA3AF] mb-3">
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-white/40 mb-3">
             Overview
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -826,7 +811,7 @@ export default function DashboardPage() {
                   title="Tasks Overview"
                   subtitle={`Showing ${dashboardTasks.length} tasks`}
                   action={
-                    <span className="text-[10px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full bg-[#EDE9FE] text-[#7C3AED]">
+                    <span className="text-[10px] font-medium tracking-widest uppercase px-2.5 py-1 rounded-full bg-[#00FF88]/10 text-[#00FF88] border border-[#00FF88]/20">
                       {timePeriod === "all"
                         ? "All Time"
                         : timePeriod.charAt(0).toUpperCase() +
@@ -837,7 +822,7 @@ export default function DashboardPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
-                      <tr className="bg-[#F8F7FF]">
+                      <tr className="bg-white/[0.02]">
                         {[
                           "Task",
                           "Status",
@@ -847,28 +832,28 @@ export default function DashboardPage() {
                         ].map((h) => (
                           <th
                             key={h}
-                            className="px-5 py-3 text-left text-[10px] font-bold text-[#9CA3AF] uppercase tracking-widest first:pl-6 last:pr-6"
+                            className="px-5 py-3 text-left text-[10px] font-semibold text-white/40 uppercase tracking-widest first:pl-6 last:pr-6"
                           >
                             {h}
                           </th>
                         ))}
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#F3F4F6]">
+                    <tbody className="divide-y divide-white/[0.04]">
                       {dashboardTasks.length === 0 ? (
                         <tr>
                           <td colSpan="5" className="px-6 py-16 text-center">
                             <div className="flex flex-col items-center gap-3">
-                              <div className="w-16 h-16 rounded-2xl bg-[#EDE9FE] flex items-center justify-center">
+                              <div className="w-16 h-16 rounded-2xl bg-white/[0.05] flex items-center justify-center">
                                 <CheckSquare
                                   size={28}
-                                  className="text-[#C4B5FD]"
+                                  className="text-white/20"
                                 />
                               </div>
-                              <p className="text-sm font-semibold text-[#9CA3AF]">
+                              <p className="text-sm font-medium text-white/50">
                                 No tasks found
                               </p>
-                              <p className="text-xs text-[#C4B5FD]">
+                              <p className="text-xs text-white/30">
                                 Try adjusting your filters
                               </p>
                             </div>
@@ -888,14 +873,14 @@ export default function DashboardPage() {
                           return (
                             <tr
                               key={task._id}
-                              className="hover:bg-[#F8F7FF] transition-colors group"
+                              className="hover:bg-white/[0.03] transition-colors group"
                             >
                               <td className="px-5 py-3.5 pl-6 max-w-xs">
-                                <p className="font-semibold text-[#1E1B4B] text-sm truncate">
+                                <p className="font-medium text-white/85 text-sm truncate">
                                   {task.title}
                                 </p>
                                 {task.description && (
-                                  <p className="text-xs text-[#9CA3AF] mt-0.5 truncate">
+                                  <p className="text-xs text-white/40 mt-0.5 truncate">
                                     {task.description}
                                   </p>
                                 )}
@@ -912,25 +897,25 @@ export default function DashboardPage() {
                                     {task.assignedTo.slice(0, 2).map((u, i) => (
                                       <span
                                         key={i}
-                                        className="text-xs font-medium text-[#7C3AED] bg-[#EDE9FE] px-2 py-0.5 rounded-md"
+                                        className="text-xs font-medium text-[#00D4FF] bg-[#00D4FF]/10 px-2 py-0.5 rounded-md border border-[#00D4FF]/20"
                                       >
                                         {u.name || "User"}
                                       </span>
                                     ))}
                                     {task.assignedTo.length > 2 && (
-                                      <span className="text-xs font-medium text-[#9CA3AF] bg-[#F3F4F6] px-2 py-0.5 rounded-md">
+                                      <span className="text-xs font-medium text-white/50 bg-white/[0.05] px-2 py-0.5 rounded-md border border-white/[0.06]">
                                         +{task.assignedTo.length - 2}
                                       </span>
                                     )}
                                   </div>
                                 ) : (
-                                  <span className="text-xs text-[#C4B5FD]">
+                                  <span className="text-xs text-white/30">
                                     Unassigned
                                   </span>
                                 )}
                               </td>
                               <td className="px-5 py-3.5 pr-6">
-                                <span className="text-xs font-medium text-[#6B7280]">
+                                <span className="text-xs font-medium text-white/50">
                                   {task.deadline
                                     ? new Date(
                                         task.deadline,
@@ -1009,16 +994,16 @@ export default function DashboardPage() {
                     },
                   ].map(({ label, href, icon }) => (
                     <Link key={href} href={href} className="no-underline">
-                      <div className="px-4 py-4 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] flex items-center justify-between hover:border-[#C4B5FD] hover:bg-[#EDE9FE] transition-all group">
+                      <div className="px-4 py-4 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-between hover:border-[#00FF88]/30 hover:bg-white/[0.06] transition-all group">
                         <div className="flex items-center gap-3">
                           <span className="text-xl">{icon}</span>
-                          <span className="text-sm font-semibold text-[#1E1B4B]">
+                          <span className="text-sm font-medium text-white/85">
                             {label}
                           </span>
                         </div>
                         <ArrowUpRight
                           size={16}
-                          className="text-[#C4B5FD] group-hover:text-[#7C3AED] transition-colors"
+                          className="text-white/30 group-hover:text-[#00FF88] transition-colors"
                         />
                       </div>
                     </Link>
@@ -1031,17 +1016,14 @@ export default function DashboardPage() {
           {/* ── Sidebar ── */}
           <div className="flex flex-col gap-5">
             {/* Today's Snapshot */}
-            <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] shadow-xl shadow-purple-200">
-              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/10 pointer-events-none" />
-              <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/5 pointer-events-none" />
+            <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-[#00FF88]/20 to-[#00CC70]/10 backdrop-blur-xl border border-[#00FF88]/20 shadow-glass">
+              <div className="absolute -top-8 -right-8 w-28 h-28 rounded-full bg-white/[0.03] pointer-events-none" />
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 rounded-full bg-white/[0.02] pointer-events-none" />
               <div className="relative">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-white/60 mb-1">
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-[#00FF88]/60 mb-1">
                   Live
                 </p>
-                <h2
-                  className="text-base font-bold text-white mb-4"
-                  style={{ fontFamily: "'DM Serif Display', serif" }}
-                >
+                <h2 className="text-base font-bold text-white mb-4">
                   Today's Snapshot
                 </h2>
                 <div className="flex flex-col gap-3">
@@ -1059,18 +1041,15 @@ export default function DashboardPage() {
                   ].map(({ label, value, icon }) => (
                     <div
                       key={label}
-                      className="px-4 py-3 rounded-xl bg-white/15 flex items-center justify-between"
+                      className="px-4 py-3 rounded-xl bg-white/[0.06] flex items-center justify-between"
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-base">{icon}</span>
-                        <span className="text-xs font-semibold text-white/80">
+                        <span className="text-xs font-medium text-white/70">
                           {label}
                         </span>
                       </div>
-                      <span
-                        className="text-2xl font-bold text-white"
-                        style={{ fontFamily: "'DM Serif Display', serif" }}
-                      >
+                      <span className="text-2xl font-bold text-white">
                         {value}
                       </span>
                     </div>
@@ -1078,18 +1057,18 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Completion ring */}
-                <div className="mt-4 pt-4 border-t border-white/20">
+                <div className="mt-4 pt-4 border-t border-white/[0.08]">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-white/70">
+                    <span className="text-xs font-medium text-white/60">
                       Completion Rate
                     </span>
-                    <span className="text-sm font-bold text-white">
+                    <span className="text-sm font-bold text-[#00FF88]">
                       {completionRate}%
                     </span>
                   </div>
-                  <div className="h-2 bg-white/20 rounded-full overflow-hidden">
+                  <div className="h-2 bg-white/[0.08] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-white rounded-full transition-all duration-700"
+                      className="h-full bg-gradient-to-r from-[#00FF88] to-[#00CC70] rounded-full transition-all duration-700"
                       style={{ width: `${completionRate}%` }}
                     />
                   </div>
@@ -1100,11 +1079,11 @@ export default function DashboardPage() {
             {/* Profile Card */}
             <Card>
               <div className="px-5 py-4">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-3">
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-3">
                   Account
                 </p>
-                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-[#F3F4F6]">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#7C3AED] to-[#5B21B6] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                <div className="flex items-center gap-3 mb-4 pb-4 border-b border-white/[0.06]">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#00FF88] to-[#00CC70] flex items-center justify-center text-[#0B1220] text-sm font-bold flex-shrink-0 shadow-lg shadow-[#00FF88]/20">
                     {user?.name
                       ?.split(" ")
                       .map((n) => n[0])
@@ -1113,10 +1092,10 @@ export default function DashboardPage() {
                       .slice(0, 2)}
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#1E1B4B]">
+                    <p className="text-sm font-semibold text-white">
                       {user?.name}
                     </p>
-                    <p className="text-xs text-[#9CA3AF]">{user?.email}</p>
+                    <p className="text-xs text-white/50">{user?.email}</p>
                   </div>
                 </div>
                 <div className="flex flex-col gap-2.5">
@@ -1128,17 +1107,17 @@ export default function DashboardPage() {
                       key={label}
                       className="flex justify-between items-center"
                     >
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-[#C4B5FD]">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-white/30">
                         {label}
                       </span>
-                      <span className="text-xs font-semibold text-[#1E1B4B]">
+                      <span className="text-xs font-medium text-white/80">
                         {value}
                       </span>
                     </div>
                   ))}
                 </div>
                 <Link href="/profile" className="no-underline block mt-4">
-                  <button className="w-full py-2.5 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] text-[#7C3AED] text-xs font-bold hover:bg-[#EDE9FE] hover:border-[#C4B5FD] transition-all duration-150">
+                  <button className="w-full py-2.5 rounded-xl bg-white/[0.05] border border-white/[0.1] text-white/70 text-xs font-medium hover:bg-white/[0.08] hover:border-white/[0.15] hover:text-white transition-all duration-150">
                     View Full Profile
                   </button>
                 </Link>
@@ -1149,7 +1128,7 @@ export default function DashboardPage() {
             {isAdminOrManager && (
               <Card>
                 <div className="px-5 py-4">
-                  <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-3">
+                  <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-3">
                     Shortcuts
                   </p>
                   <div className="flex flex-col gap-2">
@@ -1158,7 +1137,7 @@ export default function DashboardPage() {
                         label: "Manage Tasks",
                         href: "/tasks",
                         icon: <CheckSquare size={15} />,
-                        color: "text-[#7C3AED] bg-[#EDE9FE]",
+                        color: "text-[#00FF88] bg-[#00FF88]/10",
                       },
                       ...(user?.role === "Admin"
                         ? [
@@ -1166,22 +1145,22 @@ export default function DashboardPage() {
                               label: "Manage Users",
                               href: "/users",
                               icon: <Users size={15} />,
-                              color: "text-[#2563EB] bg-[#DBEAFE]",
+                              color: "text-[#00D4FF] bg-[#00D4FF]/10",
                             },
                           ]
                         : []),
                     ].map(({ label, href, icon, color }) => (
                       <Link key={href} href={href} className="no-underline">
-                        <div className="px-4 py-3 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] flex items-center gap-3 hover:border-[#C4B5FD] hover:bg-[#EDE9FE] transition-all group cursor-pointer">
+                        <div className="px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.06] flex items-center gap-3 hover:border-[#00FF88]/25 hover:bg-white/[0.06] transition-all group cursor-pointer">
                           <span className={`p-1.5 rounded-lg ${color}`}>
                             {icon}
                           </span>
-                          <span className="text-sm font-semibold text-[#1E1B4B] flex-1">
+                          <span className="text-sm font-medium text-white/85 flex-1">
                             {label}
                           </span>
                           <ArrowUpRight
                             size={14}
-                            className="text-[#C4B5FD] group-hover:text-[#7C3AED] transition-colors"
+                            className="text-white/30 group-hover:text-[#00FF88] transition-colors"
                           />
                         </div>
                       </Link>
@@ -1194,22 +1173,22 @@ export default function DashboardPage() {
             {/* Recent Activity */}
             <Card>
               <div className="px-5 py-4">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[#C4B5FD] mb-1">
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-1">
                   Updates
                 </p>
-                <h3 className="text-sm font-bold text-[#1E1B4B] mb-3">
+                <h3 className="text-sm font-semibold text-white mb-3">
                   Recent Activity
                 </h3>
                 <div className="flex flex-col gap-2 max-h-72 overflow-y-auto pr-1">
                   {recentActivities.slice(0, 5).map((activity, i) => (
                     <div
                       key={i}
-                      className="px-3 py-2.5 rounded-xl bg-[#F8F7FF] border border-[#E5E7EB] border-l-2 border-l-[#7C3AED]"
+                      className="px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] border-l-2 border-l-[#00FF88]"
                     >
-                      <p className="text-xs font-semibold text-[#1E1B4B] mb-0.5 leading-snug">
+                      <p className="text-xs font-medium text-white/85 mb-0.5 leading-snug">
                         {activity.description}
                       </p>
-                      <p className="text-[10px] text-[#C4B5FD]">
+                      <p className="text-[10px] text-white/40">
                         {activity.createdAt
                           ? new Date(activity.createdAt).toLocaleString()
                           : "Just now"}
@@ -1217,7 +1196,7 @@ export default function DashboardPage() {
                     </div>
                   ))}
                   {recentActivities.length === 0 && (
-                    <p className="text-xs text-[#C4B5FD] text-center py-6">
+                    <p className="text-xs text-white/30 text-center py-6">
                       No recent activity
                     </p>
                   )}

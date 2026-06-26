@@ -93,9 +93,9 @@ export default function TeamPage() {
 
   if (!canViewTeam) {
     return (
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
+      <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+        <AlertCircle className="h-4 w-4 text-[#FFB84D] shrink-0" />
+        <AlertDescription className="text-sm text-white/60">
           You don't have permission to view team information.
         </AlertDescription>
       </Alert>
@@ -103,20 +103,20 @@ export default function TeamPage() {
   }
 
   const getPerformanceColor = (score) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
-    return "text-red-600";
+    if (score >= 80) return "text-[#00FF88]";
+    if (score >= 60) return "text-[#FFB84D]";
+    return "text-[#FF6B6B]";
   };
 
   const getGradeColor = (grade) => {
     const colors = {
-      A: "bg-green-100 text-green-800 border-green-300",
-      B: "bg-blue-100 text-blue-800 border-blue-300",
-      C: "bg-yellow-100 text-yellow-800 border-yellow-300",
-      D: "bg-orange-100 text-orange-800 border-orange-300",
-      F: "bg-red-100 text-red-800 border-red-300",
+      A: "bg-[#00FF88]/15 text-[#00FF88] ring-1 ring-[#00FF88]/25",
+      B: "bg-[#00D4FF]/15 text-[#00D4FF] ring-1 ring-[#00D4FF]/25",
+      C: "bg-[#FFB84D]/15 text-[#FFB84D] ring-1 ring-[#FFB84D]/25",
+      D: "bg-[#B366FF]/15 text-[#B366FF] ring-1 ring-[#B366FF]/25",
+      F: "bg-[#FF6B6B]/15 text-[#FF6B6B] ring-1 ring-[#FF6B6B]/25",
     };
-    return colors[grade] || "bg-gray-100 text-gray-800 border-gray-300";
+    return colors[grade] || "bg-white/[0.08] text-white/60 ring-1 ring-white/[0.1]";
   };
 
   return (
@@ -124,8 +124,8 @@ export default function TeamPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Team Monitoring</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-3xl font-bold text-white/85">Team Monitoring</h1>
+          <p className="text-white/50 mt-1">
             View and manage your team's performance
           </p>
         </div>
@@ -136,54 +136,54 @@ export default function TeamPage() {
       </div>
 
       {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-600">{error}</AlertDescription>
+        <Alert className="bg-white/[0.04] backdrop-blur-xl border border-red-500/30 rounded-xl">
+          <AlertDescription className="text-red-400">{error}</AlertDescription>
         </Alert>
       )}
 
       {/* Team Stats Overview */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-white/50">
                 Total Members
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.totalMembers}</div>
+              <div className="text-2xl font-bold text-white/85">{stats.totalMembers}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-white/50">
                 Active Today
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-[#00FF88]">
                 {stats.activeUsers}
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-white/50">
                 Total Tasks
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{stats.tasks?.totalTasks || 0}</div>
+              <div className="text-2xl font-bold text-white/85">{stats.tasks?.totalTasks || 0}</div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+              <CardTitle className="text-sm font-medium text-white/50">
                 Overdue Tasks
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
+              <div className="text-2xl font-bold text-[#FF6B6B]">
                 {stats.tasks?.overdueTasks || 0}
               </div>
             </CardContent>
@@ -192,7 +192,7 @@ export default function TeamPage() {
       )}
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 border-b border-slate-200">
+      <div className="flex gap-2 border-b border-white/[0.06]">
         <Button
           variant={activeTab === "members" ? "default" : "ghost"}
           onClick={() => {
@@ -245,52 +245,52 @@ export default function TeamPage() {
 
       {/* Content Area */}
       {loading ? (
-        <p className="text-center text-muted-foreground py-8">
+        <p className="text-center text-white/50 py-8">
           Loading team data...
         </p>
       ) : activeTab === "members" ? (
         <div className="grid gap-4">
           {members.length === 0 ? (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>No team members found.</AlertDescription>
+            <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+              <AlertCircle className="h-4 w-4 text-white/40 shrink-0" />
+              <AlertDescription className="text-sm text-white/50">No team members found.</AlertDescription>
             </Alert>
           ) : (
             members.map((member) => (
               <Card
                 key={member._id}
-                className="hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm hover:shadow-glass-md transition-all duration-200 cursor-pointer"
                 onClick={() => handleViewMember(member, "tasks")}
               >
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <User className="h-5 w-5 text-slate-500" />
-                        <h3 className="text-lg font-semibold">{member.name}</h3>
-                        <Badge variant="outline">{member.role}</Badge>
-                        <Badge variant="secondary">{member.department}</Badge>
+                        <User className="h-5 w-5 text-white/40" />
+                        <h3 className="text-lg font-semibold text-white/85">{member.name}</h3>
+                        <Badge variant="outline" className="bg-white/[0.08] text-white/60 text-xs font-medium px-2.5 py-1 rounded-lg border border-white/[0.1]">{member.role}</Badge>
+                        <Badge variant="secondary" className="bg-white/[0.05] text-white/50 text-xs font-medium px-2.5 py-1 rounded-lg border border-white/[0.06]">{member.department}</Badge>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
-                          <p className="text-xs text-muted-foreground">Employee ID</p>
-                          <p className="font-medium">{member.employeeId}</p>
+                          <p className="text-xs text-white/50">Employee ID</p>
+                          <p className="font-medium text-white/70">{member.employeeId}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Performance Score</p>
+                          <p className="text-xs text-white/50">Performance Score</p>
                           <p className={`font-medium ${getPerformanceColor(member.performanceScore)}`}>
                             {member.performanceScore || "N/A"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Grade</p>
+                          <p className="text-xs text-white/50">Grade</p>
                           <Badge className={getGradeColor(member.grade)}>
                             {member.grade || "N/A"}
                           </Badge>
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground">Last Login</p>
-                          <p className="font-medium">
+                          <p className="text-xs text-white/50">Last Login</p>
+                          <p className="font-medium text-white/70">
                             {member.lastLogin
                               ? new Date(member.lastLogin).toLocaleDateString()
                               : "Never"}
@@ -298,27 +298,27 @@ export default function TeamPage() {
                         </div>
                       </div>
                       {member.taskStats && (
-                        <div className="mt-3 pt-3 border-t border-slate-200">
+                        <div className="mt-3 pt-3 border-t border-white/[0.06]">
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                             <div>
-                              <p className="text-muted-foreground">Total Tasks</p>
-                              <p className="font-semibold">{member.taskStats.total || 0}</p>
+                              <p className="text-white/50">Total Tasks</p>
+                              <p className="font-semibold text-white/70">{member.taskStats.total || 0}</p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">Completed</p>
-                              <p className="font-semibold text-green-600">
+                              <p className="text-white/50">Completed</p>
+                              <p className="font-semibold text-[#00FF88]">
                                 {member.taskStats.completed || 0}
                               </p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">In Progress</p>
-                              <p className="font-semibold text-blue-600">
+                              <p className="text-white/50">In Progress</p>
+                              <p className="font-semibold text-[#00D4FF]">
                                 {member.taskStats.inProgress || 0}
                               </p>
                             </div>
                             <div>
-                              <p className="text-muted-foreground">Overdue</p>
-                              <p className="font-semibold text-red-600">
+                              <p className="text-white/50">Overdue</p>
+                              <p className="font-semibold text-[#FF6B6B]">
                                 {member.taskStats.overdue || 0}
                               </p>
                             </div>
@@ -338,14 +338,14 @@ export default function TeamPage() {
       ) : selectedMember ? (
         <div className="space-y-4">
           {/* Member Header */}
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <User className="h-6 w-6 text-slate-500" />
+                  <User className="h-6 w-6 text-white/40" />
                   <div>
-                    <h2 className="text-xl font-semibold">{selectedMember.name}</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <h2 className="text-xl font-semibold text-white/85">{selectedMember.name}</h2>
+                    <p className="text-sm text-white/50">
                       {selectedMember.role} • {selectedMember.department}
                     </p>
                   </div>
@@ -368,25 +368,25 @@ export default function TeamPage() {
           {activeTab === "tasks" && memberData?.tasks && (
             <div className="grid gap-4">
               {memberData.tasks.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>No tasks found for this member.</AlertDescription>
+                <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 text-white/40 shrink-0" />
+                  <AlertDescription className="text-sm text-white/50">No tasks found for this member.</AlertDescription>
                 </Alert>
               ) : (
                 memberData.tasks.map((task) => (
-                  <Card key={task._id}>
+                  <Card key={task._id} className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold">{task.title}</h3>
+                            <h3 className="font-semibold text-white/85">{task.title}</h3>
                             <Badge
                               className={
                                 task.status === "Completed"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-[#00FF88]/15 text-[#00FF88] ring-1 ring-[#00FF88]/25"
                                   : task.status === "In Progress"
-                                  ? "bg-blue-100 text-blue-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-[#00D4FF]/15 text-[#00D4FF] ring-1 ring-[#00D4FF]/25"
+                                  : "bg-[#FFB84D]/15 text-[#FFB84D] ring-1 ring-[#FFB84D]/25"
                               }
                             >
                               {task.status}
@@ -394,22 +394,22 @@ export default function TeamPage() {
                             <Badge
                               className={
                                 task.priority === "Critical"
-                                  ? "bg-red-100 text-red-800"
+                                  ? "bg-[#FF6B6B]/15 text-[#FF6B6B] ring-1 ring-[#FF6B6B]/25"
                                   : task.priority === "High"
-                                  ? "bg-orange-100 text-orange-800"
-                                  : "bg-gray-100 text-gray-800"
+                                  ? "bg-[#B366FF]/15 text-[#B366FF] ring-1 ring-[#B366FF]/25"
+                                  : "bg-white/[0.08] text-white/60 ring-1 ring-white/[0.1]"
                               }
                             >
                               {task.priority}
                             </Badge>
                           </div>
                           {task.description && (
-                            <p className="text-sm text-muted-foreground mb-2">
+                            <p className="text-sm text-white/50 mb-2">
                               {task.description}
                             </p>
                           )}
-                          <div className="text-xs text-muted-foreground">
-                            <Clock className="h-3 w-3 inline mr-1" />
+                          <div className="text-xs text-white/50">
+                            <Clock className="h-3 w-3 inline mr-1 text-white/40" />
                             Deadline:{" "}
                             {task.deadline
                               ? new Date(task.deadline).toLocaleDateString()
@@ -427,19 +427,19 @@ export default function TeamPage() {
           {activeTab === "activity" && memberData?.activities && (
             <div className="grid gap-4">
               {memberData.activities.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>No activity found for this member.</AlertDescription>
+                <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 text-white/40 shrink-0" />
+                  <AlertDescription className="text-sm text-white/50">No activity found for this member.</AlertDescription>
                 </Alert>
               ) : (
                 memberData.activities.map((activity) => (
-                  <Card key={activity._id}>
+                  <Card key={activity._id} className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
                     <CardContent className="pt-4">
                       <div className="flex items-start gap-3">
-                        <Activity className="h-4 w-4 text-slate-500 mt-1" />
+                        <Activity className="h-4 w-4 text-[#00D4FF] mt-1" />
                         <div className="flex-1">
-                          <p className="text-sm font-medium">{activity.description}</p>
-                          <p className="text-xs text-muted-foreground mt-1">
+                          <p className="text-sm font-medium text-white/85">{activity.description}</p>
+                          <p className="text-xs text-white/50 mt-1">
                             {activity.type} •{" "}
                             {new Date(activity.createdAt).toLocaleString()}
                           </p>
@@ -455,44 +455,44 @@ export default function TeamPage() {
           {activeTab === "dwr" && memberData?.dwrs && (
             <div className="grid gap-4">
               {memberData.dwrs.length === 0 ? (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>No DWRs found for this member.</AlertDescription>
+                <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+                  <AlertCircle className="h-4 w-4 text-white/40 shrink-0" />
+                  <AlertDescription className="text-sm text-white/50">No DWRs found for this member.</AlertDescription>
                 </Alert>
               ) : (
                 memberData.dwrs.map((dwr) => (
-                  <Card key={dwr._id}>
+                  <Card key={dwr._id} className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
                     <CardContent className="pt-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <Calendar className="h-4 w-4 text-slate-500" />
-                            <h3 className="font-semibold">
+                            <Calendar className="h-4 w-4 text-white/40" />
+                            <h3 className="font-semibold text-white/85">
                               {new Date(dwr.date).toLocaleDateString()}
                             </h3>
                             <Badge
                               className={
                                 dwr.reviewStatus === "Approved"
-                                  ? "bg-green-100 text-green-800"
+                                  ? "bg-[#00FF88]/15 text-[#00FF88] ring-1 ring-[#00FF88]/25"
                                   : dwr.reviewStatus === "Rejected"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-yellow-100 text-yellow-800"
+                                  ? "bg-[#FF6B6B]/15 text-[#FF6B6B] ring-1 ring-[#FF6B6B]/25"
+                                  : "bg-[#FFB84D]/15 text-[#FFB84D] ring-1 ring-[#FFB84D]/25"
                               }
                             >
                               {dwr.reviewStatus}
                             </Badge>
                             {dwr.isLate && (
-                              <Badge className="bg-orange-100 text-orange-800">
+                              <Badge className="bg-orange-500/15 text-orange-400 ring-1 ring-orange-500/25">
                                 Late
                               </Badge>
                             )}
                           </div>
                           {dwr.workSummary && (
-                            <p className="text-sm text-muted-foreground mb-2">
+                            <p className="text-sm text-white/50 mb-2">
                               {dwr.workSummary}
                             </p>
                           )}
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-xs text-white/50">
                             Hours: {dwr.totalHoursWorked || 0}
                           </div>
                         </div>
@@ -505,57 +505,57 @@ export default function TeamPage() {
           )}
 
           {activeTab === "performance" && memberData?.performance && (
-            <Card>
+            <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
               <CardHeader>
-                <CardTitle>Performance Summary</CardTitle>
-                <CardDescription>
+                <CardTitle className="text-white/85">Performance Summary</CardTitle>
+                <CardDescription className="text-white/50">
                   {memberData.performance.period} period
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-xs text-muted-foreground">Performance Score</p>
+                    <p className="text-xs text-white/50">Performance Score</p>
                     <p className={`text-2xl font-bold ${getPerformanceColor(memberData.performance.user.performanceScore)}`}>
                       {memberData.performance.user.performanceScore || "N/A"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Task Completion Rate</p>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-xs text-white/50">Task Completion Rate</p>
+                    <p className="text-2xl font-bold text-[#00D4FF]">
                       {memberData.performance.taskCompletionRate?.toFixed(1) || 0}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">DWR Approval Rate</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-xs text-white/50">DWR Approval Rate</p>
+                    <p className="text-2xl font-bold text-[#00FF88]">
                       {memberData.performance.dwrApprovalRate?.toFixed(1) || 0}%
                     </p>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Avg Completion Time</p>
-                    <p className="text-2xl font-bold text-purple-600">
+                    <p className="text-xs text-white/50">Avg Completion Time</p>
+                    <p className="text-2xl font-bold text-[#B366FF]">
                       {memberData.performance.avgCompletionTime?.toFixed(1) || 0}h
                     </p>
                   </div>
                 </div>
-                <div className="mt-4 pt-4 border-t border-slate-200">
+                <div className="mt-4 pt-4 border-t border-white/[0.06]">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <p className="text-muted-foreground">Total Tasks</p>
-                      <p className="font-semibold">{memberData.performance.totalTasks || 0}</p>
+                      <p className="text-white/50">Total Tasks</p>
+                      <p className="font-semibold text-white/70">{memberData.performance.totalTasks || 0}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Completed Tasks</p>
-                      <p className="font-semibold text-green-600">{memberData.performance.completedTasks || 0}</p>
+                      <p className="text-white/50">Completed Tasks</p>
+                      <p className="font-semibold text-[#00FF88]">{memberData.performance.completedTasks || 0}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Total DWRs</p>
-                      <p className="font-semibold">{memberData.performance.totalDWRs || 0}</p>
+                      <p className="text-white/50">Total DWRs</p>
+                      <p className="font-semibold text-white/70">{memberData.performance.totalDWRs || 0}</p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground">Approved DWRs</p>
-                      <p className="font-semibold text-green-600">{memberData.performance.approvedDWRs || 0}</p>
+                      <p className="text-white/50">Approved DWRs</p>
+                      <p className="font-semibold text-[#00FF88]">{memberData.performance.approvedDWRs || 0}</p>
                     </div>
                   </div>
                 </div>
@@ -564,9 +564,9 @@ export default function TeamPage() {
           )}
         </div>
       ) : (
-        <Alert>
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Select a team member to view details.</AlertDescription>
+        <Alert className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm p-4 flex items-center gap-3">
+          <AlertCircle className="h-4 w-4 text-white/40 shrink-0" />
+          <AlertDescription className="text-sm text-white/50">Select a team member to view details.</AlertDescription>
         </Alert>
       )}
     </div>

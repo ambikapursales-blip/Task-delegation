@@ -33,47 +33,45 @@ const TaskBoard = ({
   const [selectedTask, setSelectedTask] = useState(null);
   const [filterOpen, setFilterOpen] = useState(false);
 
-  // Status configuration with colors matching the image
   const statusConfig = {
     Pending: {
       label: "Pending",
-      color: "bg-orange-50",
-      badgeColor: "bg-orange-100 text-orange-800 border-orange-300",
-      textColor: "text-orange-600",
-      dotColor: "bg-orange-500",
+      color: "bg-[#FFB84D]/10",
+      badgeColor: "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+      textColor: "text-[#FFB84D]",
+      dotColor: "#FFB84D",
       icon: Clock,
       count: 0,
     },
     "In Progress": {
       label: "In Progress",
-      color: "bg-blue-50",
-      badgeColor: "bg-blue-100 text-blue-800 border-blue-300",
-      textColor: "text-blue-600",
-      dotColor: "bg-blue-500",
+      color: "bg-[#00D4FF]/10",
+      badgeColor: "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
+      textColor: "text-[#00D4FF]",
+      dotColor: "#00D4FF",
       icon: Zap,
       count: 0,
     },
     Completed: {
       label: "Completed",
-      color: "bg-emerald-50",
-      badgeColor: "bg-emerald-100 text-emerald-800 border-emerald-300",
-      textColor: "text-emerald-600",
-      dotColor: "bg-emerald-500",
+      color: "bg-[#00FF88]/10",
+      badgeColor: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
+      textColor: "text-[#00FF88]",
+      dotColor: "#00FF88",
       icon: CheckCircle2,
       count: 0,
     },
     Overdue: {
       label: "OverDue",
-      color: "bg-red-50",
-      badgeColor: "bg-red-100 text-red-800 border-red-300",
-      textColor: "text-red-600",
-      dotColor: "bg-red-500",
+      color: "bg-[#FF6B6B]/10",
+      badgeColor: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
+      textColor: "text-[#FF6B6B]",
+      dotColor: "#FF6B6B",
       icon: AlertCircle,
       count: 0,
     },
   };
 
-  // Determine task status
   const getTaskStatus = (task) => {
     if (task.status === "Completed") return "Completed";
     if (task.isOverdue) return "Overdue";
@@ -81,7 +79,6 @@ const TaskBoard = ({
     return "Pending";
   };
 
-  // Filter and sort tasks
   const filteredTasks = useMemo(() => {
     let filtered = tasks.filter((task) => {
       const matchesSearch =
@@ -94,7 +91,6 @@ const TaskBoard = ({
       return matchesSearch && matchesStatus;
     });
 
-    // Sort tasks
     filtered.sort((a, b) => {
       if (sortBy === "deadline") {
         return new Date(a.deadline) - new Date(b.deadline);
@@ -110,7 +106,6 @@ const TaskBoard = ({
     return filtered;
   }, [tasks, searchQuery, selectedStatus, sortBy]);
 
-  // Count tasks by status
   const statusCounts = useMemo(() => {
     const counts = {
       Pending: 0,
@@ -127,12 +122,12 @@ const TaskBoard = ({
 
   const getPriorityColor = (priority) => {
     const colors = {
-      Critical: "bg-red-100 text-red-800 border-red-300",
-      High: "bg-orange-100 text-orange-800 border-orange-300",
-      Medium: "bg-amber-100 text-amber-800 border-amber-300",
-      Low: "bg-green-100 text-green-800 border-green-300",
+      Critical: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
+      High: "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+      Medium: "bg-[#00D4FF]/15 text-[#00D4FF] border-[#00D4FF]/25",
+      Low: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
     };
-    return colors[priority] || "bg-gray-100 text-gray-800 border-gray-300";
+    return colors[priority] || "bg-white/10 text-white/60 border-white/10";
   };
 
   const formatDate = (date) => {
@@ -154,51 +149,47 @@ const TaskBoard = ({
   };
 
   return (
-    <div className="w-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen p-6">
+    <div className="w-full bg-[#0B1220] min-h-screen p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header with Title */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Task Board</h1>
-          <p className="text-slate-600">
+          <h1 className="text-3xl font-bold text-white mb-2">Task Board</h1>
+          <p className="text-white/50">
             Manage and track all your tasks in one place
           </p>
         </div>
 
-        {/* Toolbar */}
         <div className="mb-8 space-y-4 lg:space-y-0">
-          {/* Search Bar */}
           <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-3 h-5 w-5 text-slate-400" />
+              <Search className="absolute left-3 top-3.5 h-5 w-5 text-white/30" />
               <Input
                 type="text"
                 placeholder="Search tasks..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-12 rounded-xl border-slate-200 focus:border-indigo-500 focus:ring-indigo-500 bg-white"
+                className="pl-10 h-12 rounded-xl bg-white/[0.05] border-white/[0.1] text-white placeholder-white/40 focus:border-[#00FF88]/50 focus:ring-[#00FF88]/30"
               />
             </div>
 
-            {/* Filter and Sort Controls */}
             <div className="flex gap-2 flex-wrap">
               <div className="relative">
                 <Button
                   variant="outline"
                   size="lg"
                   onClick={() => setFilterOpen(!filterOpen)}
-                  className="rounded-xl border-slate-200 hover:bg-slate-100 h-12"
+                  className="rounded-xl border-white/[0.1] hover:bg-white/[0.06] h-12 text-white/70"
                 >
                   <Filter className="h-4 w-4 mr-2" />
                   Filter
                 </Button>
                 {filterOpen && (
-                  <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-lg border border-slate-200 z-10 p-3 min-w-max">
+                  <div className="absolute top-full mt-2 right-0 bg-[#0F1A2E] backdrop-blur-xl rounded-xl shadow-glass border border-white/[0.08] z-10 p-3 min-w-max">
                     <button
                       onClick={() => {
                         setSelectedStatus(null);
                         setFilterOpen(false);
                       }}
-                      className="block w-full text-left px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-700 font-medium"
+                      className="block w-full text-left px-4 py-2 rounded-lg hover:bg-white/[0.06] text-white/70 font-medium"
                     >
                       All Status
                     </button>
@@ -209,7 +200,7 @@ const TaskBoard = ({
                           setSelectedStatus(key);
                           setFilterOpen(false);
                         }}
-                        className="block w-full text-left px-4 py-2 rounded-lg hover:bg-slate-100 text-slate-700"
+                        className="block w-full text-left px-4 py-2 rounded-lg hover:bg-white/[0.06] text-white/70"
                       >
                         {config.label} ({statusCounts[key]})
                       </button>
@@ -218,23 +209,23 @@ const TaskBoard = ({
                 )}
               </div>
 
-              <div className="flex gap-1 bg-white rounded-xl p-1 border border-slate-200">
+              <div className="flex gap-1 bg-white/[0.04] rounded-xl p-1 border border-white/[0.06]">
                 <button
                   onClick={() => setSortBy("deadline")}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
+                  className={`px-3 py-2 rounded-lg transition-colors text-sm ${
                     sortBy === "deadline"
-                      ? "bg-indigo-100 text-indigo-700 font-medium"
-                      : "text-slate-600 hover:bg-slate-100"
+                      ? "bg-[#00FF88]/15 text-[#00FF88] font-medium"
+                      : "text-white/60 hover:bg-white/[0.06]"
                   }`}
                 >
                   Deadline
                 </button>
                 <button
                   onClick={() => setSortBy("priority")}
-                  className={`px-3 py-2 rounded-lg transition-colors ${
+                  className={`px-3 py-2 rounded-lg transition-colors text-sm ${
                     sortBy === "priority"
-                      ? "bg-indigo-100 text-indigo-700 font-medium"
-                      : "text-slate-600 hover:bg-slate-100"
+                      ? "bg-[#00FF88]/15 text-[#00FF88] font-medium"
+                      : "text-white/60 hover:bg-white/[0.06]"
                   }`}
                 >
                   Priority
@@ -243,7 +234,7 @@ const TaskBoard = ({
 
               <Button
                 onClick={onTaskCreate}
-                className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white rounded-xl h-12 font-semibold"
+                className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] hover:shadow-neon rounded-xl h-12 font-semibold"
               >
                 <Plus className="h-4 w-4 mr-2" />
                 New Task
@@ -251,7 +242,6 @@ const TaskBoard = ({
             </div>
           </div>
 
-          {/* Status Summary */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Object.entries(statusConfig).map(([key, config]) => (
               <div
@@ -259,28 +249,23 @@ const TaskBoard = ({
                 onClick={() =>
                   setSelectedStatus(selectedStatus === key ? null : key)
                 }
-                className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                className={`p-4 rounded-xl border-2 cursor-pointer transition-all bg-white/[0.04] backdrop-blur-xl ${
                   selectedStatus === key
-                    ? "border-indigo-500 bg-indigo-50"
-                    : "border-slate-200 bg-white hover:border-slate-300"
+                    ? "border-[#00FF88] bg-[#00FF88]/5"
+                    : "border-white/[0.06] hover:border-white/20"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-slate-600">
+                    <p className="text-sm font-medium text-white/60">
                       {config.label}
                     </p>
                     <p className={`text-2xl font-bold ${config.textColor}`}>
                       {statusCounts[key]}
                     </p>
                   </div>
-                  <div
-                    className={`p-3 rounded-lg ${config.badgeColor.split(" ")[0]}`}
-                  >
-                    <config.icon
-                      className="h-6 w-6"
-                      style={{ color: config.textColor.split("-")[1] }}
-                    />
+                  <div className="p-3 rounded-lg bg-white/[0.05]">
+                    <config.icon className="h-6 w-6" style={{ color: config.dotColor }} />
                   </div>
                 </div>
               </div>
@@ -288,15 +273,14 @@ const TaskBoard = ({
           </div>
         </div>
 
-        {/* Tasks List */}
         <div className="space-y-3">
           {filteredTasks.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-slate-300">
-              <AlertCircle className="h-12 w-12 text-slate-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-slate-700 mb-1">
+            <div className="text-center py-12 bg-white/[0.04] backdrop-blur-xl rounded-2xl border-2 border-dashed border-white/[0.08]">
+              <AlertCircle className="h-12 w-12 text-white/30 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white/70 mb-1">
                 No tasks found
               </h3>
-              <p className="text-slate-500">
+              <p className="text-white/40">
                 {searchQuery
                   ? "Try adjusting your search criteria"
                   : "Create your first task to get started"}
@@ -313,20 +297,18 @@ const TaskBoard = ({
                   onClick={() =>
                     setSelectedTask(selectedTask === task._id ? null : task._id)
                   }
-                  className={`p-5 rounded-2xl border-l-4 transition-all cursor-pointer hover:shadow-lg ${
-                    selectedStatus === taskStatus
-                      ? "bg-white shadow-md border-b-2 border-r-2"
-                      : "bg-white border-b border-r border-slate-200"
+                  className={`p-5 rounded-2xl border-l-4 transition-all cursor-pointer bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] hover:shadow-glass ${
+                    selectedTask === task._id ? "shadow-glass" : ""
                   }`}
                   style={{ borderLeftColor: statusInfo.dotColor }}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 mb-2">
+                      <h3 className="text-lg font-semibold text-white mb-2">
                         {task.title}
                       </h3>
                       {task.description && (
-                        <p className="text-slate-600 text-sm mb-3 line-clamp-2">
+                        <p className="text-white/50 text-sm mb-3 line-clamp-2">
                           {task.description}
                         </p>
                       )}
@@ -336,47 +318,45 @@ const TaskBoard = ({
                     </Badge>
                   </div>
 
-                  {/* Task metadata */}
-                  <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-slate-100">
+                  <div className="flex flex-wrap gap-3 mb-4 pb-4 border-b border-white/[0.06]">
                     <Badge className={getPriorityColor(task.priority)}>
                       {task.priority}
                     </Badge>
 
                     {task.deadline && (
-                      <div className="flex items-center gap-1 text-xs text-slate-600 bg-slate-50 px-3 py-1.5 rounded-full">
+                      <div className="flex items-center gap-1 text-xs text-white/60 bg-white/[0.05] px-3 py-1.5 rounded-full">
                         <Calendar className="h-3.5 w-3.5" />
                         {formatDate(task.deadline)}
                       </div>
                     )}
 
                     {task.tags && task.tags.length > 0 && (
-                      <div className="flex items-center gap-1 text-xs text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-full">
+                      <div className="flex items-center gap-1 text-xs text-[#00D4FF] bg-[#00D4FF]/10 px-3 py-1.5 rounded-full">
                         <Tag className="h-3.5 w-3.5" />
                         {task.tags[0]}
                       </div>
                     )}
 
-                    <span className="text-xs text-slate-500 px-3 py-1.5 bg-slate-50 rounded-full">
+                    <span className="text-xs text-white/50 px-3 py-1.5 bg-white/[0.05] rounded-full">
                       {daysUntilDeadline(task.deadline)}
                     </span>
                   </div>
 
-                  {/* Assignees */}
                   {task.assignedTo && task.assignedTo.length > 0 && (
                     <div className="flex items-center gap-2 mb-4">
-                      <User className="h-4 w-4 text-slate-500" />
+                      <User className="h-4 w-4 text-white/40" />
                       <div className="flex gap-1">
                         {task.assignedTo.slice(0, 3).map((user, idx) => (
                           <div
                             key={idx}
-                            className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold"
+                            className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00FF88] to-[#00CC70] flex items-center justify-center text-[#0B1220] text-xs font-bold"
                             title={user.name || user}
                           >
                             {user.name ? user.name[0] : "U"}
                           </div>
                         ))}
                         {task.assignedTo.length > 3 && (
-                          <div className="w-8 h-8 rounded-full bg-slate-300 flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/60 text-xs font-bold">
                             +{task.assignedTo.length - 3}
                           </div>
                         )}
@@ -384,13 +364,12 @@ const TaskBoard = ({
                     </div>
                   )}
 
-                  {/* Action buttons */}
                   {selectedTask === task._id && (
-                    <div className="pt-2 flex gap-2 border-t border-slate-100">
+                    <div className="pt-2 flex gap-2 border-t border-white/[0.06]">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-indigo-600 hover:bg-indigo-50"
+                        className="text-[#00D4FF] hover:bg-[#00D4FF]/10"
                       >
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
@@ -398,7 +377,7 @@ const TaskBoard = ({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-slate-600 hover:bg-slate-100"
+                        className="text-white/60 hover:bg-white/[0.06]"
                       >
                         <Eye className="h-4 w-4 mr-1" />
                         View
@@ -407,7 +386,7 @@ const TaskBoard = ({
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="text-emerald-600 hover:bg-emerald-50"
+                          className="text-[#00FF88] hover:bg-[#00FF88]/10"
                           onClick={() =>
                             onTaskUpdate?.(task._id, { status: "Completed" })
                           }
@@ -419,7 +398,7 @@ const TaskBoard = ({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className="text-red-600 hover:bg-red-50 ml-auto"
+                        className="text-[#FF6B6B] hover:bg-[#FF6B6B]/10 ml-auto"
                         onClick={() => onTaskDelete?.(task._id)}
                       >
                         <Trash2 className="h-4 w-4" />

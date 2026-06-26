@@ -15,10 +15,10 @@ export default function Toast({ type = "success", message, onClose, duration = 3
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
-  const bgColor = type === "success" ? "bg-emerald-50" : "bg-red-50";
-  const borderColor = type === "success" ? "border-emerald-200" : "border-red-200";
-  const textColor = type === "success" ? "text-emerald-800" : "text-red-800";
-  const icon = type === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />;
+  const bgClass = "bg-white/[0.04] backdrop-blur-xl border shadow-glass-sm";
+  const borderColor = type === "success" ? "border-[#00FF88]/30" : "border-[#FF6B6B]/30";
+  const textColor = type === "success" ? "text-[#00FF88]" : "text-[#FF6B6B]";
+  const icon = type === "success" ? <CheckCircle2 className="w-5 h-5 text-[#00FF88]" /> : <AlertCircle className="w-5 h-5 text-[#FF6B6B]" />;
 
   return (
     <div
@@ -26,15 +26,15 @@ export default function Toast({ type = "success", message, onClose, duration = 3
         isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-[-20px]"
       }`}
     >
-      <div className={`${bgColor} ${borderColor} ${textColor} border rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 min-w-[300px]`}>
+      <div className={`${bgClass} ${borderColor} rounded-xl px-4 py-3 flex items-center gap-3 min-w-[300px]`}>
         {icon}
-        <p className="text-sm font-medium flex-1">{message}</p>
+        <p className={`text-sm font-medium flex-1 ${textColor}`}>{message}</p>
         <button
           onClick={() => {
             setIsVisible(false);
             setTimeout(onClose, 300);
           }}
-          className={`hover:opacity-70 transition-opacity`}
+          className="text-white/50 hover:text-white/70 transition-opacity"
         >
           <X className="w-4 h-4" />
         </button>

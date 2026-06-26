@@ -66,20 +66,20 @@ export default function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Attendance</h1>
-        <p className="text-muted-foreground mt-1">
+        <h1 className="text-3xl font-bold text-white/85">Attendance</h1>
+        <p className="text-white/50 mt-1">
           Your attendance records and statistics
         </p>
       </div>
 
       {error && (
-        <Alert className="border-red-200 bg-red-50">
-          <AlertDescription className="text-red-600">{error}</AlertDescription>
+        <Alert className="bg-white/[0.04] backdrop-blur-xl border-red-500/30">
+          <AlertDescription className="text-red-400">{error}</AlertDescription>
         </Alert>
       )}
       {success && (
-        <Alert className="border-green-200 bg-green-50">
-          <AlertDescription className="text-green-600">
+        <Alert className="bg-white/[0.04] backdrop-blur-xl border-[#00FF88]/30">
+          <AlertDescription className="text-[#00FF88]">
             {success}
           </AlertDescription>
         </Alert>
@@ -87,52 +87,52 @@ export default function AttendancePage() {
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs text-white/50 font-medium">
                 Present Days
               </p>
-              <p className="text-3xl font-bold text-green-700">
+              <p className="text-3xl font-bold text-[#00FF88]">
                 {presentCount}
               </p>
-              <p className="text-xs text-muted-foreground">days present</p>
+              <p className="text-xs text-white/50">days present</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs text-white/50 font-medium">
                 Absent Days
               </p>
-              <p className="text-3xl font-bold text-red-700">{absentCount}</p>
-              <p className="text-xs text-muted-foreground">days absent</p>
+              <p className="text-3xl font-bold text-[#FF6B6B]">{absentCount}</p>
+              <p className="text-xs text-white/50">days absent</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm">
+        <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground font-medium">
+              <p className="text-xs text-white/50 font-medium">
                 Total Days
               </p>
-              <p className="text-3xl font-bold">{totalDays}</p>
-              <p className="text-xs text-muted-foreground">record days</p>
+              <p className="text-3xl font-bold text-white/85">{totalDays}</p>
+              <p className="text-xs text-white/50">record days</p>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-slate-200 shadow-sm bg-gradient-to-br from-blue-50 to-indigo-50">
+        <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
           <CardContent className="pt-6">
             <div className="space-y-2">
-              <p className="text-xs text-blue-700 font-medium">Attendance %</p>
-              <p className="text-3xl font-bold text-blue-700">
+              <p className="text-xs text-[#00D4FF] font-medium">Attendance %</p>
+              <p className="text-3xl font-bold text-[#00D4FF]">
                 {attendancePercentage}%
               </p>
-              <p className="text-xs text-blue-600">of working days</p>
+              <p className="text-xs text-[#00D4FF]/80">of working days</p>
             </div>
           </CardContent>
         </Card>
@@ -140,14 +140,14 @@ export default function AttendancePage() {
 
       {/* Mark Attendance Button */}
       {!isHROrAdmin && (
-        <Card className="border-blue-200 bg-blue-50">
+        <Card className="bg-white/[0.04] backdrop-blur-xl border border-[#00FF88]/30 rounded-2xl shadow-glass-sm">
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-blue-900">
+                <h3 className="font-semibold text-[#00FF88]">
                   Mark Today's Attendance
                 </h3>
-                <p className="text-sm text-blue-700 mt-1">
+                <p className="text-sm text-white/60 mt-1">
                   {new Date().toLocaleDateString("en-US", {
                     weekday: "long",
                     year: "numeric",
@@ -158,7 +158,7 @@ export default function AttendancePage() {
               </div>
               <Button
                 onClick={handleMarkAttendance}
-                className="bg-[#0F6E56] hover:bg-[#0C5A45] text-white"
+                className="bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] hover:opacity-90"
               >
                 <CheckCircle2 className="h-4 w-4 mr-2" />
                 Mark Present
@@ -169,35 +169,35 @@ export default function AttendancePage() {
       )}
 
       {/* Attendance Records */}
-      <Card className="border-slate-200">
+      <Card className="bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl shadow-glass-sm">
         <CardHeader>
-          <CardTitle>Attendance History</CardTitle>
-          <CardDescription>Your daily attendance records</CardDescription>
+          <CardTitle className="text-white/85">Attendance History</CardTitle>
+          <CardDescription className="text-white/50">Your daily attendance records</CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-center text-muted-foreground">
+            <p className="text-center text-white/50">
               Loading records...
             </p>
           ) : records.length === 0 ? (
-            <Alert>
-              <AlertDescription>No attendance records yet</AlertDescription>
+            <Alert className="bg-white/[0.04] backdrop-blur-xl border-white/[0.08]">
+              <AlertDescription className="text-white/50">No attendance records yet</AlertDescription>
             </Alert>
           ) : (
             <div className="space-y-2 max-h-96 overflow-y-auto">
               {records.map((record, index) => (
                 <div
                   key={index}
-                  className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200"
+                  className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/[0.06]"
                 >
                   <div className="flex items-center gap-3">
                     {record.status === "Present" ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <CheckCircle2 className="h-5 w-5 text-[#00FF88]" />
                     ) : (
-                      <XCircle className="h-5 w-5 text-red-600" />
+                      <XCircle className="h-5 w-5 text-[#FF6B6B]" />
                     )}
                     <div>
-                      <p className="text-sm font-medium">
+                      <p className="text-sm font-medium text-white/85">
                         {new Date(record.date).toLocaleDateString("en-US", {
                           weekday: "short",
                           year: "numeric",
@@ -206,7 +206,7 @@ export default function AttendancePage() {
                         })}
                       </p>
                       {record.loginTime && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-white/50">
                           Login:{" "}
                           {new Date(record.loginTime).toLocaleTimeString()}
                         </p>
@@ -216,8 +216,8 @@ export default function AttendancePage() {
                   <Badge
                     className={
                       record.status === "Present"
-                        ? "bg-green-100 text-green-800"
-                        : "bg-red-100 text-red-800"
+                        ? "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25"
+                        : "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25"
                     }
                   >
                     {record.status}

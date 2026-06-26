@@ -26,25 +26,25 @@ import {
 } from "lucide-react";
 
 const STATUS_STYLES = {
-  Upcoming: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-  Ongoing: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  Completed: "bg-stone-100 text-stone-700 ring-1 ring-stone-300",
-  Cancelled: "bg-red-50 text-red-700 ring-1 ring-red-200",
+  Upcoming: "bg-[#00D4FF]/15 text-[#00D4FF] ring-1 ring-[#00D4FF]/25",
+  Ongoing: "bg-[#00FF88]/15 text-[#00FF88] ring-1 ring-[#00FF88]/25",
+  Completed: "bg-white/[0.08] text-white/60 ring-1 ring-white/[0.1]",
+  Cancelled: "bg-[#FF6B6B]/15 text-[#FF6B6B] ring-1 ring-[#FF6B6B]/25",
 };
 
 const STATUS_DOT = {
-  Upcoming: "bg-blue-500",
-  Ongoing: "bg-emerald-500",
-  Completed: "bg-stone-400",
-  Cancelled: "bg-red-500",
+  Upcoming: "bg-[#00D4FF]",
+  Ongoing: "bg-[#00FF88]",
+  Completed: "bg-white/30",
+  Cancelled: "bg-[#FF6B6B]",
 };
 
 const RSVP_STATUS = {
-  Pending: "bg-amber-50 text-amber-700 ring-1 ring-amber-200",
-  Accepted: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
-  Declined: "bg-red-50 text-red-700 ring-1 ring-red-200",
-  Attended: "bg-blue-50 text-blue-700 ring-1 ring-blue-200",
-  Absent: "bg-stone-100 text-stone-700 ring-1 ring-stone-300",
+  Pending: "bg-[#FFB84D]/15 text-[#FFB84D] ring-1 ring-[#FFB84D]/25",
+  Accepted: "bg-[#00FF88]/15 text-[#00FF88] ring-1 ring-[#00FF88]/25",
+  Declined: "bg-[#FF6B6B]/15 text-[#FF6B6B] ring-1 ring-[#FF6B6B]/25",
+  Attended: "bg-[#00D4FF]/15 text-[#00D4FF] ring-1 ring-[#00D4FF]/25",
+  Absent: "bg-white/[0.08] text-white/60 ring-1 ring-white/[0.1]",
 };
 
 export default function EventsPage() {
@@ -188,11 +188,11 @@ export default function EventsPage() {
 
   const SortIcon = ({ field }) => {
     if (sortField !== field)
-      return <ChevronDown className="w-3 h-3 text-stone-300" />;
+      return <ChevronDown className="w-3 h-3 text-white/30" />;
     return sortDir === "asc" ? (
-      <ChevronUp className="w-3 h-3 text-[#0F6E56]" />
+      <ChevronUp className="w-3 h-3 text-[#00FF88]" />
     ) : (
-      <ChevronDown className="w-3 h-3 text-[#0F6E56]" />
+      <ChevronDown className="w-3 h-3 text-[#00FF88]" />
     );
   };
 
@@ -226,13 +226,13 @@ export default function EventsPage() {
   if (loading) return <Loading />;
 
   return (
-    <div className="w-full min-h-screen bg-stone-50">
+    <div className="w-full min-h-screen bg-[#0B1220]">
       {/* Header */}
-      <div className="w-full bg-white border-b border-stone-200 px-6 py-4">
+      <div className="w-full bg-white/[0.02] backdrop-blur-xl border-b border-white/[0.06] px-6 py-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-stone-800">Events</h1>
-            <p className="text-sm text-stone-500 mt-1">
+            <h1 className="text-2xl font-bold text-white/85">Events</h1>
+            <p className="text-sm text-white/50 mt-1">
               Manage organizational events and RSVPs
             </p>
           </div>
@@ -242,7 +242,7 @@ export default function EventsPage() {
                 resetForm();
                 setShowForm(true);
               }}
-              className="gap-2 bg-[#0F6E56] text-white hover:bg-[#0a4a3d] w-full sm:w-auto justify-center"
+              className="gap-2 bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] hover:opacity-90 w-full sm:w-auto justify-center"
             >
               <Plus className="h-4 w-4" />
               New Event
@@ -263,16 +263,16 @@ export default function EventsPage() {
       <div className="w-full px-6 py-5">
         {/* Event Form */}
         {showForm && (
-          <div className="w-full bg-white border border-stone-200 rounded-xl mb-5 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-stone-100 bg-stone-50">
-              <h2 className="text-base font-bold text-stone-800">
+          <div className="w-full bg-white/[0.04] backdrop-blur-xl border border-white/[0.06] rounded-2xl mb-5 overflow-hidden shadow-glass-sm">
+            <div className="px-6 py-4 border-b border-white/[0.06] bg-white/[0.02]">
+              <h2 className="text-base font-bold text-white/85">
                 {editingEvent ? "Edit Event" : "Create New Event"}
               </h2>
             </div>
             <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="col-span-1 sm:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Event Title <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -281,12 +281,12 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, title: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                     placeholder="Enter event title"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Event Type
                   </label>
                   <select
@@ -294,7 +294,7 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, type: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                   >
                     <option value="Meeting">Meeting</option>
                     <option value="Training">Training</option>
@@ -305,7 +305,7 @@ export default function EventsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Priority
                   </label>
                   <select
@@ -313,7 +313,7 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, priority: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -321,7 +321,7 @@ export default function EventsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Start Date <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -330,11 +330,11 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, startDate: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     End Date <span className="text-red-400">*</span>
                   </label>
                   <input
@@ -343,11 +343,11 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, endDate: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Location
                   </label>
                   <input
@@ -356,7 +356,7 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, location: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                     placeholder="Physical location (if not virtual)"
                   />
                 </div>
@@ -368,15 +368,15 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, isVirtual: e.target.checked })
                     }
-                    className="w-4 h-4 rounded border-stone-300 text-[#0F6E56] focus:ring-[#0F6E56]"
+                    className="w-4 h-4 rounded border-white/30 text-[#00FF88] focus:ring-[#00FF88] bg-white/[0.05]"
                   />
-                  <label htmlFor="isVirtual" className="text-sm text-stone-600">
+                  <label htmlFor="isVirtual" className="text-sm text-white/60">
                     Virtual Event
                   </label>
                 </div>
                 {formData.isVirtual && (
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                       Meeting Link
                     </label>
                     <input
@@ -388,13 +388,13 @@ export default function EventsPage() {
                           meetingLink: e.target.value,
                         })
                       }
-                      className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 placeholder:text-stone-300 focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                      className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                       placeholder="https://meet.google.com/..."
                     />
                   </div>
                 )}
                 <div className="col-span-1 sm:col-span-2">
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                  <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                     Description
                   </label>
                   <textarea
@@ -403,20 +403,20 @@ export default function EventsPage() {
                     onChange={(e) =>
                       setFormData({ ...formData, description: e.target.value })
                     }
-                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2.5 text-sm text-stone-800 placeholder:text-stone-300 resize-y focus:outline-none focus:border-[#0F6E56] focus:bg-white transition-colors"
+                    className="w-full bg-white/[0.05] border border-white/[0.1] rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-white/30 resize-y focus:outline-none focus:border-[#00FF88] focus:bg-white/[0.08] transition-colors"
                     placeholder="Event description and agenda..."
                   />
                 </div>
                 {canManage && (
                   <div className="col-span-1 sm:col-span-2">
-                    <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wide mb-1.5">
+                    <label className="block text-xs font-semibold text-white/80 font-medium uppercase tracking-wide mb-1.5">
                       Assign To
                     </label>
                     <div className="flex flex-wrap gap-2">
                       {users.map((u) => (
                         <label
                           key={u._id}
-                          className="flex items-center gap-2 bg-stone-50 px-3 py-2 rounded-lg cursor-pointer hover:bg-stone-100 transition-colors"
+                          className="flex items-center gap-2 bg-white/[0.05] px-3 py-2 rounded-lg cursor-pointer hover:bg-white/[0.08] transition-colors"
                         >
                           <input
                             type="checkbox"
@@ -436,9 +436,9 @@ export default function EventsPage() {
                                 });
                               }
                             }}
-                            className="w-4 h-4 rounded border-stone-300 text-[#0F6E56] focus:ring-[#0F6E56]"
+                            className="w-4 h-4 rounded border-white/30 text-[#00FF88] focus:ring-[#00FF88] bg-white/[0.05]"
                           />
-                          <span className="text-sm text-stone-700">
+                          <span className="text-sm text-white/70">
                             {u.name}
                           </span>
                         </label>
@@ -447,17 +447,17 @@ export default function EventsPage() {
                   </div>
                 )}
               </div>
-              <div className="flex flex-col sm:flex-row gap-2 justify-end pt-3 border-t border-stone-100">
+              <div className="flex flex-col sm:flex-row gap-2 justify-end pt-3 border-t border-white/[0.06]">
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-sm font-medium text-stone-500 border border-stone-200 rounded-lg hover:bg-stone-50 hover:text-stone-700 transition-colors w-full sm:w-auto"
+                  className="px-4 py-2 text-sm font-medium text-white/50 border border-white/[0.1] rounded-lg hover:bg-white/[0.06] hover:text-white/70 transition-colors w-full sm:w-auto"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 text-sm font-semibold bg-[#0F6E56] hover:bg-[#0a5240] text-white rounded-lg transition-colors w-full sm:w-auto"
+                  className="px-5 py-2 text-sm font-semibold bg-gradient-to-r from-[#00FF88] to-[#00CC70] text-[#0B1220] hover:opacity-90 rounded-lg transition-colors w-full sm:w-auto"
                 >
                   {editingEvent ? "Update Event" : "Create Event"}
                 </button>
@@ -467,12 +467,12 @@ export default function EventsPage() {
         )}
 
         {/* Events Table */}
-        <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-indigo-50 to-blue-50">
-            <h2 className="text-lg font-bold text-slate-800">
+        <div className="bg-white/[0.04] backdrop-blur-xl rounded-2xl border border-white/[0.06] shadow-glass-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-white/[0.06] bg-white/[0.02]">
+            <h2 className="text-lg font-bold text-white/85">
               Events Overview
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
+            <p className="text-sm text-white/50 mt-1">
               Showing {sorted.length} events
             </p>
           </div>
@@ -484,32 +484,32 @@ export default function EventsPage() {
                 alt="No data"
                 className="w-32 h-32 object-contain"
               />
-              <p className="text-slate-500 font-medium">No events found</p>
+              <p className="text-white/50 font-medium">No events found</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-slate-200">
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  <tr className="border-b border-white/[0.04] bg-white/[0.02]">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Event
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Type
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Start Date
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Priority
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Attendees
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-xs font-bold text-white/40 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -518,54 +518,41 @@ export default function EventsPage() {
                   {sorted.map((event) => {
                     const getPriorityColor = (priority) => {
                       const colors = {
-                        High: "bg-red-100 text-red-800 border-red-300",
+                        High: "bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/25",
                         Medium:
-                          "bg-yellow-100 text-yellow-800 border-yellow-300",
-                        Low: "bg-green-100 text-green-800 border-green-300",
+                          "bg-[#FFB84D]/15 text-[#FFB84D] border-[#FFB84D]/25",
+                        Low: "bg-[#00FF88]/15 text-[#00FF88] border-[#00FF88]/25",
                       };
                       return (
                         colors[priority] ||
-                        "bg-gray-100 text-gray-800 border-gray-300"
+                        "bg-white/[0.08] text-white/60 border-white/[0.1]"
                       );
                     };
-
-                    const rowBgColor =
-                      event.status === "Completed"
-                        ? "bg-green-50"
-                        : event.status === "Ongoing"
-                          ? "bg-blue-50"
-                          : event.status === "Cancelled"
-                            ? "bg-red-50"
-                            : event.priority === "High"
-                              ? "bg-orange-50"
-                              : event.priority === "Medium"
-                                ? "bg-yellow-100"
-                                : "bg-white";
 
                     return (
                       <tr
                         key={event._id}
-                        className={`${rowBgColor} border-b border-slate-100 hover:opacity-80 transition-opacity`}
+                        className="bg-transparent border-b border-white/[0.04] hover:bg-white/[0.02] transition-colors"
                       >
                         <td className="px-4 py-3 max-w-xs">
                           <div>
-                            <p className="font-semibold text-slate-800 text-sm truncate">
+                            <p className="font-semibold text-white/85 text-sm truncate">
                               {event.title}
                             </p>
                             {event.description && (
-                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1 truncate">
+                              <p className="text-xs text-white/50 mt-0.5 line-clamp-1 truncate">
                                 {event.description}
                               </p>
                             )}
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                          <span className="text-xs font-medium text-white/60 bg-white/[0.08] px-2 py-1 rounded-md">
                             {event.type}
                           </span>
                         </td>
                         <td className="px-4 py-3">
-                          <span className="text-xs text-slate-600">
+                          <span className="text-xs text-white/60">
                             {fmtDateTime(event.startDate)}
                           </span>
                         </td>
@@ -592,7 +579,7 @@ export default function EventsPage() {
                                   .map((user, idx) => (
                                     <span
                                       key={idx}
-                                      className="text-xs font-medium text-indigo-700 bg-indigo-50 px-2 py-1 rounded-md border border-indigo-200"
+                                      className="text-xs font-medium text-[#B366FF] bg-[#B366FF]/15 px-2 py-1 rounded-md border border-[#B366FF]/25"
                                       title={
                                         typeof user === "object"
                                           ? user.name
@@ -605,13 +592,13 @@ export default function EventsPage() {
                                     </span>
                                   ))}
                                 {event.assignedTo.length > 2 && (
-                                  <span className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-1 rounded-md">
+                                  <span className="text-xs font-medium text-white/50 bg-white/[0.08] px-2 py-1 rounded-md">
                                     +{event.assignedTo.length - 2}
                                   </span>
                                 )}
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-400">
+                              <span className="text-xs text-white/40">
                                 No attendees
                               </span>
                             )}
@@ -622,7 +609,7 @@ export default function EventsPage() {
                             {event.status !== "Completed" && (
                               <button
                                 onClick={() => handleMarkComplete(event._id)}
-                                className="p-1.5 text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+                                className="p-1.5 text-white/50 hover:text-[#00FF88] hover:bg-[#00FF88]/10 rounded-md transition-colors"
                                 title="Mark as completed"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
@@ -636,13 +623,13 @@ export default function EventsPage() {
                                     setFormData(event);
                                     setShowForm(true);
                                   }}
-                                  className="p-1.5 text-stone-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                                  className="p-1.5 text-white/50 hover:text-[#00D4FF] hover:bg-[#00D4FF]/10 rounded-md transition-colors"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
                                 </button>
                                 <button
                                   onClick={() => handleDelete(event._id)}
-                                  className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                  className="p-1.5 text-white/50 hover:text-[#FF6B6B] hover:bg-[#FF6B6B]/10 rounded-md transition-colors"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>

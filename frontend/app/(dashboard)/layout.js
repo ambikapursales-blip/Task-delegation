@@ -56,7 +56,6 @@ export default function DashboardLayout({ children }) {
     }
   }, [user, loading, router]);
 
-  // Check if current route is accessible for user role
   useEffect(() => {
     if (user && typeof window !== "undefined") {
       const currentPath =
@@ -78,7 +77,7 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex h-screen overflow-hidden bg-[#0B1220]">
       <Sidebar isOpen={isMobileMenuOpen} setIsOpen={setIsMobileMenuOpen} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Header
