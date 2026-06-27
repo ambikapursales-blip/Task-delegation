@@ -22,10 +22,5 @@
   ],
   "env": {
     "NEXT_PUBLIC_API_URL": "/api"
-  },
-  "functions": {
-    "backend/api/index.js": {
-      "runtime": "nodejs18.x"
-    }
   }
 }
